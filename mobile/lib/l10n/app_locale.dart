@@ -1,0 +1,233 @@
+import 'package:flutter/material.dart';
+
+class S {
+  static String of(BuildContext context, String key) {
+    final code = Localizations.localeOf(context).languageCode;
+    final map = code == "am" ? _am : _en;
+    return map[key] ?? _en[key] ?? key;
+  }
+
+  static const Map<String, String> _am = {
+    // ── Login ──
+    "appName": "TIMI",
+    "appTagline": "የመጋዘን እና ክሬዲት አስተዳደር",
+    "login": "ግባ",
+    "invalidCode": "የተሳሳተ ኮድ",
+
+    // ── Dashboard ──
+    "welcome": "እንኳን ደህና መጡ",
+    "totalCredit": "ጠቅላላ ክሬዲት",
+    "loading": "በመጫን ላይ...",
+    "error": "ስህተት",
+    "warehouse": "መጋዘን",
+    "credit": "ክሬዲት",
+    "notebook": "ማስታወሻ",
+    "users": "ተጠቃሚዎች",
+    "settings": "ቅንብሮች",
+
+    // ── Inventory ──
+    "searchRollSerial": "ሮል / ሲሪያል ፈልግ",
+    "newRoll": "አዲስ ሮል",
+    "rollNumber": "ሮል ቁጥር",
+    "serialNumber": "ሲሪያል ቁጥር",
+    "meters": "ሜትር",
+    "register": "መዝግብ",
+    "registered": "ተመዝግቧል!",
+    "serial": "ሲሪያል",
+    "original": "ኦሪጅናል",
+    "remaining": "ቀሪ",
+    "moveOut": "ውጣ",
+    "note": "ማስታወሻ (ከፈለጉ)",
+    "areYouSure": "እርግጠኛ ነዎት?",
+    "moveConfirm": "ሜትር ለማውጣት?",
+    "cancel": "ሰርዝ",
+    "yes": "አዎ",
+    "confirm": "አረጋግጥ",
+    "successMoved": "በተሳካ ሁኔታ ወጥቷል",
+    "invalidNumber": "ትክክለኛ ቁጥር ያስገቡ",
+    "inventoryHistory": "የመጋዘን ታሪክ",
+    "noHistory": "ታሪክ የለም",
+    "out": "ወጣ",
+    "by": "በ",
+    "date": "ቀን",
+
+    // ── Credit ──
+    "searchClient": "ደንበኛ ፈልግ",
+    "noCredits": "ምንም ክሬዲት አልተገኘም",
+    "newCredit": "አዲስ ክሬዲት",
+    "firstName": "ስም",
+    "lastName": "የአባት ስም",
+    "optional": "ከፈለጉ",
+    "pricePerMeter": "ዋጋ / ሜትር",
+    "creditRegistered": "ክሬዲት ተመዝግቧል!",
+    "remainingBalance": "ቀሪ ሂሳብ",
+    "price": "ዋጋ",
+    "paid": "የተከፈለ",
+    "pay": "ክፈል",
+    "edit": "አስተካክል",
+    "summary": "ማጠቃለያ",
+    "status": "ሁኔታ",
+    "editCredit": "ክሬዲት አስተካክል",
+    "confirmEdit": "ማስተካከሉን ያረጋግጡ",
+    "before": "ቀድሞ",
+    "after": "በኋላ",
+    "newTotalCredit": "አዲስ ጠቅላላ ክሬዲት",
+    "saveChanges": "ለውጦችን አስቀምጥ",
+    "creditUpdated": "ክሬዲት ተዘምኗል",
+    "paidHistory": "የክፍያ ታሪክ",
+    "noPaidCredits": "የተከፈለ ክሬዲት የለም",
+    "confirmPayment": "ክፍያ ያረጋግጡ",
+    "receivePayment": "ክፍያ ተቀበል",
+    "currentBalance": "ወቅታዊ ሂሳብ",
+    "amount": "መጠን",
+    "remainingAfterPayment": "ከክፍያ በኋላ ቀሪ",
+    "paymentReceived": "ክፍያ ተቀብሏል",
+
+    // ── Notebook ──
+    "noNotes": "ማስታወሻ የለም",
+    "editNote": "ማስታወሻ አስተካክል",
+    "newNote": "አዲስ ማስታወሻ",
+    "titleOptional": "ርዕስ (ከፈለጉ)",
+    "writeNote": "ማስታወሻዎን ይጻፉ...",
+    "save": "አስቀምጥ",
+    "deleteNote": "ማስታወሻ ይሰረዝ?",
+    "cannotUndo": "ይህ ድርጊት መመለስ አይችልም።",
+    "delete": "ሰርዝ",
+    "noteSaved": "ማስታወሻ ተቀምጧል!",
+    "noteDeleted": "ማስታወሻ ተሰርዟል",
+
+    // ── Users ──
+    "newEmployee": "አዲስ ሰራተኛ",
+    "accessCode": "የመዳረሻ ኮድ",
+    "accessCodeManual": "የመዳረሻ ኮድ (በእጅ)",
+    "role": "ሚና",
+    "owner": "ባለቤት",
+    "createUser": "ሰራተኛ ፍጠር",
+    "userCreated": "ሰራተኛ ተፈጥሯል",
+    "giveCode": "ይህን ኮድ ለሰራተኛው ይስጡ።",
+    "done": "ተፈጸመ",
+    "activeAccount": "ንቁ መለያ",
+    "updateUser": "ሰራተኛ አዘምን",
+    "userUpdated": "ሰራተኛ ተዘምኗል",
+
+    // ── Settings ──
+    "language": "ቋንቋ",
+    "version": "ስሪት",
+    "logout": "ውጣ",
+
+    // ── Common ──
+    "retry": "እንደገና ሞክር",
+  };
+
+  static const Map<String, String> _en = {
+    // ── Login ──
+    "appName": "TIMI",
+    "appTagline": "Warehouse & Credit Management",
+    "login": "Login",
+    "invalidCode": "Invalid code",
+
+    // ── Dashboard ──
+    "welcome": "Welcome",
+    "totalCredit": "Total Credit",
+    "loading": "Loading...",
+    "error": "Error",
+    "warehouse": "Warehouse",
+    "credit": "Credit",
+    "notebook": "Notebook",
+    "users": "Users",
+    "settings": "Settings",
+
+    // ── Inventory ──
+    "searchRollSerial": "Search Roll / Serial",
+    "newRoll": "New Roll",
+    "rollNumber": "Roll Number",
+    "serialNumber": "Serial Number",
+    "meters": "Meters",
+    "register": "Register",
+    "registered": "Registered!",
+    "serial": "Serial",
+    "original": "Original",
+    "remaining": "Remaining",
+    "moveOut": "Move Out",
+    "note": "Note (Optional)",
+    "areYouSure": "Are you sure?",
+    "moveConfirm": "meters to move out?",
+    "cancel": "Cancel",
+    "yes": "Yes",
+    "confirm": "Confirm",
+    "successMoved": "Successfully moved",
+    "invalidNumber": "Please enter a valid number",
+    "inventoryHistory": "Inventory History",
+    "noHistory": "No history",
+    "out": "Out",
+    "by": "By",
+    "date": "Date",
+
+    // ── Credit ──
+    "searchClient": "Search client",
+    "noCredits": "No credits found",
+    "newCredit": "New Credit",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "optional": "Optional",
+    "pricePerMeter": "Price / Meter",
+    "creditRegistered": "Credit registered!",
+    "remainingBalance": "Remaining Balance",
+    "price": "Price",
+    "paid": "Paid",
+    "pay": "Pay",
+    "edit": "Edit",
+    "summary": "Summary",
+    "status": "Status",
+    "editCredit": "Edit Credit",
+    "confirmEdit": "Confirm Edit",
+    "before": "Before",
+    "after": "After",
+    "newTotalCredit": "New Total Credit",
+    "saveChanges": "Save Changes",
+    "creditUpdated": "Credit updated successfully",
+    "paidHistory": "Paid History",
+    "noPaidCredits": "No paid credits",
+    "confirmPayment": "Confirm Payment",
+    "receivePayment": "Receive Payment",
+    "currentBalance": "Current Balance",
+    "amount": "Amount",
+    "remainingAfterPayment": "Remaining After Payment",
+    "paymentReceived": "Payment received successfully",
+
+    // ── Notebook ──
+    "noNotes": "No notes",
+    "editNote": "Edit Note",
+    "newNote": "New Note",
+    "titleOptional": "Title (Optional)",
+    "writeNote": "Write your note...",
+    "save": "Save",
+    "deleteNote": "Delete Note?",
+    "cannotUndo": "This action cannot be undone.",
+    "delete": "Delete",
+    "noteSaved": "Note saved!",
+    "noteDeleted": "Note deleted",
+
+    // ── Users ──
+    "newEmployee": "New Employee",
+    "accessCode": "Access Code",
+    "accessCodeManual": "Access Code (Manual)",
+    "role": "Role",
+    "owner": "Owner",
+    "createUser": "Create User",
+    "userCreated": "User Created",
+    "giveCode": "Give this code to the employee.",
+    "done": "Done",
+    "activeAccount": "Active Account",
+    "updateUser": "Update User",
+    "userUpdated": "User updated",
+
+    // ── Settings ──
+    "language": "Language",
+    "version": "Version",
+    "logout": "Logout",
+    
+    // ── Common ──
+    "retry": "Retry",
+  };
+}

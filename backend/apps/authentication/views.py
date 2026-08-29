@@ -8,12 +8,10 @@ from .serializers import LoginSerializer
 
 
 class LoginView(APIView):
-
     authentication_classes = []
     permission_classes = []
 
     def post(self, request):
-
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -43,3 +41,28 @@ class LoginView(APIView):
                 "access_code": user.access_code,
             }
         })
+
+
+class ResetDemoDataView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def post(self, request):
+        secret = request.data.get("secret")
+        if secret != "konjit_demo_reset_2026":
+            return Response({"detail": "Invalid secret key"}, status=status.HTTP_403_FORBIDDEN)
+        
+        from apps.inventory.models import Inventory, InventoryHistory
+        from apps.credits.models import Client, Credit, Payment
+        from apps.notebook.models import Note
+        
+        InventoryHistory.objects.all().delete()
+        Inventory.objects.all().delete()
+        Payment.objects.all().delete()
+        Credit.objects.all().delete()
+        Client.objects.all().delete()
+        Note.objects.all().delete()
+        
+        User.objects.exclude(access_code="123456").delete()
+        
+        return Response({"detail": "Demo data wiped!"})

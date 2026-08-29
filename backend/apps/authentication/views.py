@@ -52,11 +52,11 @@ class ResetDemoDataView(APIView):
         if secret != "konjit_demo_reset_2026":
             return Response({"detail": "Invalid secret key"}, status=status.HTTP_403_FORBIDDEN)
         
-        from apps.inventory.models import Inventory, InventoryHistory
+        from apps.inventory.models import Inventory, InventoryMovement
         from apps.credits.models import Client, Credit, Payment
         from apps.notebook.models import Note
         
-        InventoryHistory.objects.all().delete()
+        InventoryMovement.objects.all().delete()
         Inventory.objects.all().delete()
         Payment.objects.all().delete()
         Credit.objects.all().delete()

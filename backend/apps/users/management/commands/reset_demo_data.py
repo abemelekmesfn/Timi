@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from apps.inventory.models import Inventory, InventoryHistory
+from apps.inventory.models import Inventory, InventoryMovement
 from apps.credits.models import Client, Credit, Payment
 from apps.notebook.models import Note
 from apps.users.models import User
@@ -10,7 +10,7 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         self.stdout.write("Wiping demo data...")
         
-        InventoryHistory.objects.all().delete()
+        InventoryMovement.objects.all().delete()
         Inventory.objects.all().delete()
         
         Payment.objects.all().delete()

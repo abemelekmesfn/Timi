@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../l10n/app_locale.dart';
 import '../../providers/user_provider.dart';
+import '../../providers/note_provider.dart';
 import 'auth_provider.dart';
 import 'login_controller.dart';
 
@@ -24,21 +25,31 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     ref.read(authLoadingProvider.notifier).state = true;
 
-    final success = await LoginController().login(controller.text);
+    try {
+      final success = await LoginController().login(controller.text);
 
-    ref.read(authLoadingProvider.notifier).state = false;
+      if (!mounted) return;
+      ref.read(authLoadingProvider.notifier).state = false;
 
-    if (!mounted) return;
-
-    if (success) {
-      ref.invalidate(userProvider);
-      context.go("/dashboard");
-    } else {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(S.of(context, "invalidCode"))));
+      if (success) {
+        ref.invalidate(userProvider);
+        ref.invalidate(noteProvider);
+        context.go("/dashboard");
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(S.of(context, "invalidCode")))
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ref.read(authLoadingProvider.notifier).state = false;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString().replaceAll("Exception: ", "")))
+      );
     }
   }
+
+  bool _obscureText = true;
 
   @override
   Widget build(BuildContext context) {
@@ -72,16 +83,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
               TextField(
                 controller: controller,
-                keyboardType: TextInputType.number,
+                keyboardType: const TextInputType.numberWithOptions(decimal: false, signed: false), // Ensures number keyboard
                 textAlign: TextAlign.center,
-                obscureText: true,
+                obscureText: _obscureText,
                 obscuringCharacter: '•',
                 maxLength: 6,
                 style: const TextStyle(fontSize: 28, letterSpacing: 10),
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   hintText: "••••••",
                   counterText: "",
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscureText ? Icons.visibility_off : Icons.visibility,
+                      color: Colors.grey,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _obscureText = !_obscureText;
+                      });
+                    },
+                  ),
                 ),
               ),
 

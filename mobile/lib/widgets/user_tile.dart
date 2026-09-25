@@ -5,8 +5,9 @@ import '../models/user_model.dart';
 class UserTile extends StatelessWidget {
   final UserModel user;
   final VoidCallback onTap;
+  final VoidCallback? onLongPress;
 
-  const UserTile({super.key, required this.user, required this.onTap});
+  const UserTile({super.key, required this.user, required this.onTap, this.onLongPress});
 
   @override
   Widget build(BuildContext context) {
@@ -33,6 +34,7 @@ class UserTile extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         onTap: onTap,
+        onLongPress: onLongPress,
         leading: CircleAvatar(
           backgroundColor: color.withAlpha(25),
           foregroundColor: color,

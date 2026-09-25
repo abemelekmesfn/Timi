@@ -46,4 +46,8 @@ class UserService {
       },
     );
   }
+
+  Future<void> deleteUser(String id) async {
+    await ApiService.dio.delete("/users/$id/");
+  }
 }

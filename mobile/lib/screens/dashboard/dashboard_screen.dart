@@ -8,12 +8,17 @@ import '../../providers/user_provider.dart';
 import '../../providers/credit_provider.dart';
 import '../../widgets/dashboard_card.dart';
 import '../../widgets/summary_card.dart';
-import '../inventory/inventory_screen.dart';
+import '../inventory/warehouses_screen.dart';
 import '../credits/credit_screen.dart';
 import '../notebook/notebook_screen.dart';
 import '../users/users_screen.dart';
 import '../settings/settings_screen.dart';
-
+import '../cart/cart_screen.dart';
+import '../notifications/notifications_screen.dart';
+import '../../providers/cart_provider.dart';
+import '../../providers/notification_provider.dart';
+import '../../services/notification_service.dart';
+import 'admin_reports_screen.dart';
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
 
@@ -25,16 +30,43 @@ class DashboardScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.surface,
       body: user.when(
-        data: (u) => SafeArea(
+        data: (u) {
+          if (u.roles.contains("owner")) {
+            NotificationService.initialize().then((_) {
+              NotificationService.requestPermission();
+              // Check unread and show local notification
+              ref.read(notificationServiceProvider).getNotifications().then((notifs) {
+                final unread = notifs.where((n) => !n.isRead).toList();
+                if (unread.isNotEmpty) {
+                  final latest = unread.first;
+                  final isAm = ref.read(languageProvider).languageCode == "am";
+                  NotificationService.showNotification(
+                    title: isAm ? "አዲስ የቲሚ ማሳወቂያ" : "New TIMI Notification",
+                    body: isAm ? latest.messageAm : latest.messageEn,
+                  );
+                }
+              });
+            });
+          }
+
+          return SafeArea(
           child: Column(
             children: [
               Container(
                 padding: const EdgeInsets.fromLTRB(20, 16, 8, 16),
                 decoration: BoxDecoration(
                   color: AppColors.white,
-                  border: Border(
-                    bottom: BorderSide(color: Colors.grey.shade200),
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(24),
+                    bottomRight: Radius.circular(24),
                   ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.03),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
                 child: Row(
                   children: [
@@ -104,31 +136,131 @@ class DashboardScreen extends ConsumerWidget {
                         ),
                       ),
                     ),
+                    const SizedBox(width: 8),
+                    // Cart Icon with Badge
+                    Consumer(
+                      builder: (context, ref, child) {
+                        final cartAsync = ref.watch(cartProvider);
+                        final cartItems = cartAsync.valueOrNull ?? [];
+                        return Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withAlpha(18),
+                                shape: BoxShape.circle,
+                              ),
+                              child: IconButton(
+                                icon: const Icon(Icons.shopping_cart, color: AppColors.primary, size: 20),
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (_) => const CartScreen()),
+                                  );
+                                },
+                              ),
+                            ),
+                            if (cartItems.isNotEmpty)
+                              Positioned(
+                                right: 0,
+                                top: 0,
+                                child: Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: const BoxDecoration(
+                                    color: Colors.red,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Text(
+                                    '${cartItems.length}',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        );
+                      },
+                    ),
+                    // Notification Icon (Admin only)
+                    if (u.roles.contains("owner")) ...[
+                      const SizedBox(width: 8),
+                      Consumer(
+                        builder: (context, ref, child) {
+                          final notifications = ref.watch(notificationsProvider).valueOrNull ?? [];
+                          final unreadCount = notifications.where((n) => !n.isRead).length;
+
+                          return Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary.withAlpha(18),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: IconButton(
+                                  icon: const Icon(Icons.notifications, color: AppColors.primary, size: 20),
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+                                    );
+                                  },
+                                ),
+                              ),
+                              if (unreadCount > 0)
+                                Positioned(
+                                  right: 0,
+                                  top: 0,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(4),
+                                    decoration: const BoxDecoration(
+                                      color: Colors.red,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Text(
+                                      '$unreadCount',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          );
+                        },
+                      ),
+                    ],
                     const SizedBox(width: 4),
                   ],
                 ),
               ),
 
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Consumer(builder: (context, ref, child) {
-                  final totalCredit = ref.watch(totalCreditProvider);
-                  return totalCredit.when(
-                    data: (total) => SummaryCard(
-                      title: S.of(context, "totalCredit"),
-                      value: "${total.toStringAsFixed(2)} ETB",
-                    ),
-                    loading: () => SummaryCard(
-                      title: S.of(context, "totalCredit"),
-                      value: S.of(context, "loading"),
-                    ),
-                    error: (_, __) => SummaryCard(
-                      title: S.of(context, "totalCredit"),
-                      value: S.of(context, "error"),
-                    ),
-                  );
-                }),
-              ),
+              if (u.roles.contains("owner"))
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Consumer(builder: (context, ref, child) {
+                    final totalCredit = ref.watch(totalCreditProvider);
+                    return totalCredit.when(
+                      data: (total) => SummaryCard(
+                        title: S.of(context, "totalCredit"),
+                        value: "${total.toStringAsFixed(2)} ETB",
+                      ),
+                      loading: () => SummaryCard(
+                        title: S.of(context, "totalCredit"),
+                        value: S.of(context, "loading"),
+                      ),
+                      error: (_, __) => SummaryCard(
+                        title: S.of(context, "totalCredit"),
+                        value: S.of(context, "error"),
+                      ),
+                    );
+                  }),
+                ),
 
               Expanded(
                 child: Padding(
@@ -138,6 +270,20 @@ class DashboardScreen extends ConsumerWidget {
                     crossAxisSpacing: 14,
                     mainAxisSpacing: 14,
                     children: [
+                      if (u.roles.contains("owner"))
+                        DashboardCard(
+                          icon: Icons.bar_chart,
+                          title: S.of(context, "reports"),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const AdminReportsScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                        
                       if (u.roles.contains("owner") || u.roles.contains("warehouse"))
                         DashboardCard(
                           icon: Icons.warehouse,
@@ -146,7 +292,7 @@ class DashboardScreen extends ConsumerWidget {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => const InventoryScreen(),
+                                builder: (_) => const WarehousesScreen(),
                               ),
                             );
                           },
@@ -211,7 +357,8 @@ class DashboardScreen extends ConsumerWidget {
               ),
             ],
           ),
-        ),
+        );
+        },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (_, __) => Center(child: Text(S.of(context, "error"))),
       ),

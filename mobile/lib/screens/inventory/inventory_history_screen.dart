@@ -30,7 +30,7 @@ class InventoryHistoryScreen extends ConsumerWidget {
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                 child: ListTile(
                   title: Text(
-                    "${item.rollNumber} - ${item.serialNumber}",
+                    "${item.designNumber} - ${item.colorNumber}",
                     style: const TextStyle(fontWeight: FontWeight.w600),
                   ),
                   subtitle: Padding(

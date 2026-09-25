@@ -1,13 +1,13 @@
 class MovementModel {
-  final String rollNumber;
-  final String serialNumber;
+  final String designNumber;
+  final String colorNumber;
   final double metersOut;
   final String movedBy;
   final String date;
 
   MovementModel({
-    required this.rollNumber,
-    required this.serialNumber,
+    required this.designNumber,
+    required this.colorNumber,
     required this.metersOut,
     required this.movedBy,
     required this.date,
@@ -15,11 +15,11 @@ class MovementModel {
 
   factory MovementModel.fromJson(Map<String, dynamic> json) {
     return MovementModel(
-      rollNumber: json["roll_number"],
-      serialNumber: json["serial_number"],
-      metersOut: double.parse(json["meters_out"].toString()),
-      movedBy: json["moved_by_name"],
-      date: json["created_at"],
+      designNumber: json["design_number"] ?? "",
+      colorNumber: json["color_number"] ?? "",
+      metersOut: double.tryParse(json["meters_out"]?.toString() ?? "0") ?? 0.0,
+      movedBy: json["moved_by_name"] ?? "System",
+      date: json["created_at"] ?? "",
     );
   }
 }

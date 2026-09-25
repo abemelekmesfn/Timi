@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../l10n/app_locale.dart';
 import '../../l10n/language_provider.dart';
 import '../../providers/user_provider.dart';
+import '../../providers/note_provider.dart';
 import '../../services/storage/auth_storage.dart';
 import '../../core/theme/app_colors.dart';
 
@@ -88,6 +89,7 @@ class SettingsScreen extends ConsumerWidget {
                 if (!context.mounted) return;
 
                 ref.invalidate(userProvider);
+                ref.invalidate(noteProvider); // MUST clear cached notes for privacy!
                 context.go("/login");
               },
             ),

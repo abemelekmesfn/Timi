@@ -9,7 +9,7 @@ class UserListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsOwner]
 
 
-class UserDetailView(generics.RetrieveUpdateAPIView):
+class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsOwner]

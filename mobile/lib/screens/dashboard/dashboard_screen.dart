@@ -202,11 +202,12 @@ class DashboardScreen extends ConsumerWidget {
                                 ),
                                 child: IconButton(
                                   icon: const Icon(Icons.notifications, color: AppColors.primary, size: 20),
-                                  onPressed: () {
-                                    Navigator.push(
+                                  onPressed: () async {
+                                    await Navigator.push(
                                       context,
                                       MaterialPageRoute(builder: (_) => const NotificationsScreen()),
                                     );
+                                    ref.invalidate(notificationsProvider);
                                   },
                                 ),
                               ),

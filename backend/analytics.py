@@ -15,7 +15,7 @@ logger = logging.getLogger("nexus")
 
 def _load_env_file():
     """Load .env from Timi's backend directory if python-dotenv isn't available."""
-    env_path = Path(__file__).resolve().parent / "backend" / ".env"
+    env_path = Path(__file__).resolve().parent / ".env"
     if not env_path.exists():
         return
     with open(env_path, "r") as f:
@@ -212,7 +212,7 @@ class Nexus:
                 'analytics.NexusMiddleware',
             ]
         """
-        from analytics import nexus as _nexus
+        from backend.analytics import nexus as _nexus
 
         class NexusMiddleware:
             def __init__(self, get_response):

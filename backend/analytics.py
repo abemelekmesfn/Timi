@@ -212,7 +212,7 @@ class Nexus:
                 'analytics.NexusMiddleware',
             ]
         """
-        from backend.analytics import nexus as _nexus
+        from analytics import nexus as _nexus
 
         class NexusMiddleware:
             def __init__(self, get_response):

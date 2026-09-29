@@ -37,6 +37,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     final valueController = TextEditingController();
     String moveType = "items";
     DesignGroupModel? selectedDesign;
+    final designsFuture = InventoryService().getDesignGroups(fromWarehouse!.id, "");
 
     showDialog(
       context: context,
@@ -47,7 +48,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               FutureBuilder<List<DesignGroupModel>>(
-                  future: InventoryService().getDesignGroups(fromWarehouse!.id, ""),
+                  future: designsFuture,
                   builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                           return const CircularProgressIndicator();

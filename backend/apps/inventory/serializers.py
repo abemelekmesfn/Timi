@@ -88,7 +88,7 @@ class BatchCartMoveOutSerializer(serializers.Serializer):
 
 class BulkItemSerializer(serializers.Serializer):
     design_number = serializers.CharField(max_length=30)
-    color_number = serializers.CharField(max_length=50, required=False, allow_blank=True, default="")
+    color_number = serializers.CharField(max_length=50, required=False, allow_blank=True, allow_null=True, default="")
     original_meters = serializers.DecimalField(max_digits=8, decimal_places=2)
 
 

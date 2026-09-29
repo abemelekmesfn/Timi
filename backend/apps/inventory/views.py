@@ -494,7 +494,7 @@ class BulkInventoryCreateView(APIView):
             inv = Inventory.objects.create(
                 warehouse=warehouse,
                 design_number=item["design_number"],
-                color_number=item.get("color_number", ""),
+                color_number=item.get("color_number") or "",
                 original_meters=item["original_meters"],
                 remaining_meters=item["original_meters"],
                 created_by=request.user,

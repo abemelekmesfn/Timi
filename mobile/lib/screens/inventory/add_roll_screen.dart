@@ -351,8 +351,8 @@ class _BatchConfirmScreenState extends ConsumerState<BatchConfirmScreen> {
 
       final cleanBatch = currentBatch.map((e) {
         return {
-          "design_number": e["design_number"],
-          "color_number": e["color_number"],
+          "design_number": e["design_number"] ?? "",
+          "color_number": e["color_number"] ?? "",
           "original_meters": double.tryParse(e["original_meters"].toString()) ?? 0.0,
         };
       }).toList();

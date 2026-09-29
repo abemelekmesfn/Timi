@@ -903,8 +903,27 @@ class DashboardExportView(APIView):
                 import os
                 
                 from django.conf import settings
-                font_path = os.path.join(settings.BASE_DIR, "nyala.ttf")
-                has_amharic_font = os.path.exists(font_path)
+                import logging
+                logger = logging.getLogger(__name__)
+                
+                # Try multiple font locations for Amharic support
+                font_candidates = [
+                    str(settings.BASE_DIR / "nyala.ttf"),                    # backend/nyala.ttf
+                    os.path.join(os.path.dirname(__file__), "nyala.ttf"),    # next to this views.py
+                    os.path.join(str(settings.BASE_DIR), "nyala.ttf"),       # explicit str conversion
+                    "C:\\Windows\\Fonts\\nyala.ttf",                          # Windows local
+                    "/usr/share/fonts/nyala.ttf",                            # Linux system
+                ]
+                
+                font_path = None
+                for candidate in font_candidates:
+                    logger.info(f"Checking font path: {candidate} -> exists={os.path.exists(candidate)}")
+                    if os.path.exists(candidate):
+                        font_path = candidate
+                        break
+                
+                has_amharic_font = font_path is not None
+                logger.info(f"Amharic font found: {has_amharic_font}, path: {font_path}")
                 
                 output = io.BytesIO()
                 p = canvas.Canvas(output, pagesize=letter)

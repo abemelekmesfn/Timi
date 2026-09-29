@@ -902,8 +902,8 @@ class DashboardExportView(APIView):
                 import matplotlib.font_manager as fm
                 import os
                 
-                # Check for Nyala font for Amharic support
-                font_path = "C:\\Windows\\Fonts\\nyala.ttf"
+                from django.conf import settings
+                font_path = os.path.join(settings.BASE_DIR, "nyala.ttf")
                 has_amharic_font = os.path.exists(font_path)
                 
                 output = io.BytesIO()

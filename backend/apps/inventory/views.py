@@ -489,20 +489,21 @@ class BulkInventoryCreateView(APIView):
         warehouse = Warehouse.objects.get(pk=serializer.validated_data["warehouse"])
         items_data = serializer.validated_data["items"]
 
-        created = []
-        for item in items_data:
-            inv = Inventory.objects.create(
+        inventory_objects = [
+            Inventory(
                 warehouse=warehouse,
                 design_number=item["design_number"],
                 color_number=item.get("color_number") or "",
                 original_meters=item["original_meters"],
                 remaining_meters=item["original_meters"],
                 created_by=request.user,
-            )
-            created.append(inv.id)
+            ) for item in items_data
+        ]
+        Inventory.objects.bulk_create(inventory_objects)
+        created_count = len(inventory_objects)
 
         return Response(
-            {"message": f"{len(created)} items created.", "count": len(created)},
+            {"message": f"{created_count} items created.", "count": created_count},
             status=status.HTTP_201_CREATED,
         )
 

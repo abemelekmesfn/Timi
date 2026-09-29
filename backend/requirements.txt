@@ -44,7 +44,7 @@ mdurl==0.1.2
 mmh3==5.2.1
 multidict==6.7.1
 mysql-connector-python==9.3.0
-numpy==2.3.0
+numpy==1.26.4
 packaging==25.0
 pandas==2.3.0
 pillow==12.2.0

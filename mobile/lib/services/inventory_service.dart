@@ -172,6 +172,21 @@ class InventoryService {
     );
   }
 
+  Future<void> updateDesignName({
+    required String designNumber,
+    required String designName,
+    double pricePerMeter = 0.0,
+  }) async {
+    await ApiService.dio.put(
+      "/inventory/designs/$designNumber/",
+      data: {
+        "design_number": designNumber,
+        "design_name": designName,
+        "price_per_meter": pricePerMeter,
+      },
+    );
+  }
+
   Future<List<Map<String, dynamic>>> parseExcel(String filePath) async {
     final formData = FormData.fromMap({
       "file": await MultipartFile.fromFile(filePath),

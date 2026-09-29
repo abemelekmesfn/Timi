@@ -543,6 +543,12 @@ class DesignNameListCreateView(generics.ListCreateAPIView):
     serializer_class = DesignNameSerializer
     permission_classes = [IsWarehouseOrOwner]
 
+class DesignNameDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = DesignName.objects.all()
+    serializer_class = DesignNameSerializer
+    permission_classes = [IsWarehouseOrOwner]
+    lookup_field = "design_number"
+
 # ═══════════════════════════════════════════════
 #  Excel Parsing (Fallback)
 # ═══════════════════════════════════════════════

@@ -50,6 +50,37 @@ class _DesignNameDialogState extends ConsumerState<DesignNameDialog> {
     }
   }
 
+  Future<void> updateDesign() async {
+    if (designNoController.text.trim().isEmpty || designNameController.text.trim().isEmpty) return;
+
+    final price = double.tryParse(pricePerMeterController.text.trim()) ?? 0.0;
+
+    setState(() => isSubmitting = true);
+    try {
+      await InventoryService().updateDesignName(
+        designNumber: designNoController.text.trim(),
+        designName: designNameController.text.trim(),
+        pricePerMeter: price,
+      );
+
+      if (mounted) {
+        ref.invalidate(designNamesProvider);
+        ref.invalidate(designGroupsProvider);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Updated successfully")),
+        );
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("${S.of(context, "error")}: $e")),
+        );
+        setState(() => isSubmitting = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Dialog(
@@ -88,6 +119,11 @@ class _DesignNameDialogState extends ConsumerState<DesignNameDialog> {
                 TextButton(
                   onPressed: () => Navigator.pop(context),
                   child: Text(S.of(context, "cancel")),
+                ),
+                const SizedBox(width: 8),
+                TextButton(
+                  onPressed: isSubmitting ? null : updateDesign,
+                  child: Text(S.of(context, "update") ?? "Update"),
                 ),
                 const SizedBox(width: 8),
                 FilledButton(

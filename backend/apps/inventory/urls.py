@@ -11,6 +11,7 @@ from .views import (
     BulkInventoryCreateView,
     InventoryHistoryView,
     DesignNameListCreateView,
+    DesignNameDetailView,
     ParseExcelView,
     DashboardStatsView,
     DashboardExportView,
@@ -53,4 +54,5 @@ urlpatterns = [
 
     # Design Names
     path("designs/", DesignNameListCreateView.as_view()),
+    path("designs/<str:design_number>/", DesignNameDetailView.as_view()),
 ]

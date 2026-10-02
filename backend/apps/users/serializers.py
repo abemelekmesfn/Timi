@@ -11,6 +11,7 @@ class UserSerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "roles",
+            "permissions",
             "access_code",
             "is_active",
             "created_at",

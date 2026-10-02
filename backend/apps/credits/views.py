@@ -7,12 +7,12 @@ from rest_framework import status
 
 from .models import Client, Credit, Payment
 from .serializers import ClientSerializer, CreditSerializer, PaymentSerializer
-from .permissions import IsCreditOrOwner
+from .permissions import HasCreditPermission
 
 class ClientSearchView(generics.ListCreateAPIView):
 
     serializer_class = ClientSerializer
-    permission_classes = [IsCreditOrOwner]
+    permission_classes = [HasCreditPermission]
 
     def get_queryset(self):
         search = self.request.query_params.get("search", "")
@@ -25,7 +25,7 @@ class ClientSearchView(generics.ListCreateAPIView):
 class CreditListCreateView(generics.ListCreateAPIView):
 
     serializer_class = CreditSerializer
-    permission_classes = [IsCreditOrOwner]
+    permission_classes = [HasCreditPermission]
 
     def get_queryset(self):
         return Credit.objects.filter(
@@ -38,14 +38,14 @@ class CreditUpdateView(generics.UpdateAPIView):
 
     serializer_class = CreditSerializer
 
-    permission_classes = [IsCreditOrOwner]
+    permission_classes = [HasCreditPermission]
 
 
 
 
 class ReceivePaymentView(APIView):
 
-    permission_classes = [IsCreditOrOwner]
+    permission_classes = [HasCreditPermission]
 
     @transaction.atomic
     def post(self, request, pk):
@@ -86,7 +86,7 @@ class CreditHistoryView(generics.ListAPIView):
 
     serializer_class = CreditSerializer
 
-    permission_classes = [IsCreditOrOwner]
+    permission_classes = [HasCreditPermission]
 
     def get_queryset(self):
         return Credit.objects.filter(

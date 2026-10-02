@@ -20,6 +20,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     access_code = models.CharField(max_length=6, unique=True)
 
     roles = models.JSONField(default=list)
+    permissions = models.JSONField(default=dict)
 
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)

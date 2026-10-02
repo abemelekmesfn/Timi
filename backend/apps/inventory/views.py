@@ -23,7 +23,16 @@ from .serializers import (
     AdminNotificationSerializer,
     ReservedInventorySerializer,
 )
-from .permissions import IsWarehouseOrOwner, IsOwner
+from .permissions import (
+    IsOwner,
+    HasWarehouseAccess,
+    HasTransferPermission,
+    HasHistoryPermission,
+    HasDashboardPermission,
+    HasDesignPermission,
+    HasMoveOutPermission,
+    HasImportPermission
+)
 
 
 # ═══════════════════════════════════════════════
@@ -37,15 +46,22 @@ class WarehouseListCreateView(generics.ListCreateAPIView):
     def get_permissions(self):
         if self.request.method == "POST":
             return [IsOwner()]
-        return [IsWarehouseOrOwner()]
+        return [HasWarehouseAccess()]
 
     def get_queryset(self):
-        return Warehouse.objects.annotate(
+        qs = Warehouse.objects.annotate(
             item_count=Count(
                 "inventory_items",
                 filter=Q(inventory_items__remaining_meters__gt=0),
             )
         ).order_by("-created_at")
+        
+        user = self.request.user
+        if user and user.is_authenticated and "owner" not in user.roles:
+            allowed_warehouses = user.permissions.get("warehouses", [])
+            qs = qs.filter(id__in=allowed_warehouses)
+            
+        return qs
 
 
 class WarehouseDetailView(generics.RetrieveDestroyAPIView):
@@ -67,7 +83,7 @@ class WarehouseDetailView(generics.RetrieveDestroyAPIView):
 
 class WarehouseDesignGroupView(APIView):
 
-    permission_classes = [IsWarehouseOrOwner]
+    permission_classes = [HasWarehouseAccess]
 
     def get(self, request, warehouse_id):
         search = request.query_params.get("search", "")
@@ -135,7 +151,7 @@ class WarehouseDesignGroupView(APIView):
 class InventoryListCreateView(generics.ListCreateAPIView):
 
     serializer_class = InventorySerializer
-    permission_classes = [IsWarehouseOrOwner]
+    permission_classes = [HasWarehouseAccess]
 
     def get_queryset(self):
         search = self.request.query_params.get("search")
@@ -159,7 +175,7 @@ class InventoryDetailView(generics.RetrieveAPIView):
 
     queryset = Inventory.objects.all()
     serializer_class = InventorySerializer
-    permission_classes = [IsWarehouseOrOwner]
+    permission_classes = [HasWarehouseAccess]
 
 
 # ═══════════════════════════════════════════════
@@ -168,7 +184,7 @@ class InventoryDetailView(generics.RetrieveAPIView):
 
 class MoveOutView(APIView):
 
-    permission_classes = [IsWarehouseOrOwner]
+    permission_classes = [HasMoveOutPermission]
 
     @transaction.atomic
     def post(self, request, pk):
@@ -210,7 +226,7 @@ class MoveOutView(APIView):
 
 class DesignMoveOutView(APIView):
 
-    permission_classes = [IsWarehouseOrOwner]
+    permission_classes = [HasMoveOutPermission]
 
     @transaction.atomic
     def post(self, request):
@@ -281,7 +297,7 @@ class DesignMoveOutView(APIView):
 # ═══════════════════════════════════════════════
 
 class BatchCartMoveOutView(APIView):
-    permission_classes = [IsWarehouseOrOwner]
+    permission_classes = [HasMoveOutPermission]
 
     @transaction.atomic
     def post(self, request):
@@ -355,7 +371,7 @@ class BatchCartMoveOutView(APIView):
 # ═══════════════════════════════════════════════
 
 class InventoryTransferView(APIView):
-    permission_classes = [IsWarehouseOrOwner]
+    permission_classes = [HasTransferPermission]
 
     @transaction.atomic
     def post(self, request):
@@ -479,7 +495,7 @@ class AdminNotificationView(generics.ListAPIView):
 
 class BulkInventoryCreateView(APIView):
 
-    permission_classes = [IsWarehouseOrOwner]
+    permission_classes = [HasImportPermission]
 
     @transaction.atomic
     def post(self, request):
@@ -515,7 +531,7 @@ class BulkInventoryCreateView(APIView):
 class InventoryHistoryView(generics.ListAPIView):
 
     serializer_class = InventoryHistorySerializer
-    permission_classes = [IsWarehouseOrOwner]
+    permission_classes = [HasHistoryPermission]
 
     def get_queryset(self):
         search = self.request.query_params.get("search")
@@ -541,12 +557,12 @@ class DesignNameListCreateView(generics.ListCreateAPIView):
 
     queryset = DesignName.objects.all().order_by("-created_at")
     serializer_class = DesignNameSerializer
-    permission_classes = [IsWarehouseOrOwner]
+    permission_classes = [HasDesignPermission]
 
 class DesignNameDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = DesignName.objects.all()
     serializer_class = DesignNameSerializer
-    permission_classes = [IsWarehouseOrOwner]
+    permission_classes = [HasDesignPermission]
     lookup_field = "design_number"
 
 # ═══════════════════════════════════════════════

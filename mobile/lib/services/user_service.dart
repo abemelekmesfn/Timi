@@ -12,6 +12,7 @@ class UserService {
     required String firstName,
     required String lastName,
     required List<String> roles,
+    required Map<String, dynamic> permissions,
     required String accessCode,
   }) async {
     final res = await ApiService.dio.post(
@@ -20,6 +21,7 @@ class UserService {
         "first_name": firstName,
         "last_name": lastName,
         "roles": roles,
+        "permissions": permissions,
         "access_code": accessCode,
       },
     );
@@ -32,6 +34,7 @@ class UserService {
     required String firstName,
     required String lastName,
     required List<String> roles,
+    required Map<String, dynamic> permissions,
     required String accessCode,
     required bool isActive,
   }) async {
@@ -41,6 +44,7 @@ class UserService {
         "first_name": firstName,
         "last_name": lastName,
         "roles": roles,
+        "permissions": permissions,
         "access_code": accessCode,
         "is_active": isActive,
       },

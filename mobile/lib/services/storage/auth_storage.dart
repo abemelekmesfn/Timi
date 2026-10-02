@@ -1,4 +1,5 @@
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 class AuthStorage {
   static const _token = "token";
@@ -11,6 +12,7 @@ class AuthStorage {
     await prefs.setString("first_name", data["user"]["first_name"]);
     await prefs.setString("last_name", data["user"]["last_name"]);
     await prefs.setString("roles", (data["user"]["roles"] as List).join(","));
+    await prefs.setString("permissions", jsonEncode(data["user"]["permissions"] ?? {}));
     await prefs.setString("access_code", data["user"]["access_code"]);
   }
 

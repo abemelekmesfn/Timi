@@ -15,6 +15,7 @@ final userProvider = FutureProvider<UserModel>((ref) async {
     "first_name": prefs.getString("first_name") ?? "",
     "last_name": prefs.getString("last_name") ?? "",
     "roles": prefs.getString("roles") ?? prefs.getString("role") ?? "",
+    "permissions": prefs.getString("permissions") ?? "",
     "access_code": prefs.getString("access_code") ?? "",
     "is_active": prefs.getString("is_active") ?? "true",
   });

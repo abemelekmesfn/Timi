@@ -50,27 +50,51 @@ class CreditTile extends StatelessWidget {
                       "${credit.meters.toStringAsFixed(1)} m × ${credit.pricePerMeter.toStringAsFixed(0)} ETB",
                       style: const TextStyle(color: AppColors.warmGrey, fontSize: 13),
                     ),
+
+                    const SizedBox(height: 2),
+
+                    Text(
+                      "Total: ${credit.totalCredit.toStringAsFixed(0)} ETB",
+                      style: const TextStyle(
+                        color: AppColors.primary,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ],
                 ),
               ),
 
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.orange.shade50,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  remaining,
-                  style: TextStyle(
-                    color: Colors.orange.shade700,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 13,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.shade50,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      remaining,
+                      style: TextStyle(
+                        color: Colors.orange.shade700,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                      ),
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 4),
+                  Text(
+                    "Remaining",
+                    style: TextStyle(
+                      color: Colors.orange.shade400,
+                      fontSize: 10,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

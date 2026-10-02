@@ -4,6 +4,7 @@ from .views import (
     WarehouseListCreateView,
     WarehouseDetailView,
     WarehouseDesignGroupView,
+    WarehouseDesignItemsView,
     InventoryListCreateView,
     InventoryDetailView,
     MoveOutView,
@@ -35,6 +36,7 @@ urlpatterns = [
     path("warehouses/", WarehouseListCreateView.as_view()),
     path("warehouses/<uuid:pk>/", WarehouseDetailView.as_view()),
     path("warehouses/<uuid:warehouse_id>/designs/", WarehouseDesignGroupView.as_view()),
+    path("warehouses/<uuid:warehouse_id>/designs/<str:design_number>/items/", WarehouseDesignItemsView.as_view()),
     path("transfer/", InventoryTransferView.as_view()),
 
     # Inventory

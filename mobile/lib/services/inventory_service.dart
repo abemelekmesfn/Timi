@@ -27,6 +27,31 @@ class InventoryService {
     return (res.data as List).map((e) => DesignGroupModel.fromJson(e)).toList();
   }
 
+  Future<List<Map<String, dynamic>>> getDesignItems(String warehouseId, String designNumber) async {
+    final res = await ApiService.dio.get(
+      "/inventory/warehouses/$warehouseId/designs/$designNumber/items/",
+    );
+    return (res.data as List).map((e) => Map<String, dynamic>.from(e as Map)).toList();
+  }
+
+  Future<void> designMoveOutSpecific({
+    required String warehouseId,
+    required String designNumber,
+    required List<String> itemIds,
+    String note = "",
+  }) async {
+    await ApiService.dio.post(
+      "/inventory/design-move-out/",
+      data: {
+        "warehouse": warehouseId,
+        "design_number": designNumber,
+        "move_type": "specific_items",
+        "item_ids": itemIds,
+        "note": note,
+      },
+    );
+  }
+
   Future<void> addItem({
     required String warehouseId,
     required String designNumber,

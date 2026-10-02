@@ -145,6 +145,34 @@ class WarehouseDesignGroupView(APIView):
 
 
 # ═══════════════════════════════════════════════
+#  Individual items for a design (for specific roll selection)
+# ═══════════════════════════════════════════════
+
+class WarehouseDesignItemsView(APIView):
+
+    permission_classes = [HasWarehouseAccess]
+
+    def get(self, request, warehouse_id, design_number):
+        """Return individual inventory items for a specific design in a warehouse."""
+        items = Inventory.objects.filter(
+            warehouse_id=warehouse_id,
+            design_number=design_number,
+            remaining_meters__gt=0,
+        ).order_by("remaining_meters")
+
+        result = []
+        for item in items:
+            result.append({
+                "id": str(item.id),
+                "remaining_meters": str(item.remaining_meters),
+                "color_number": item.color_number,
+                "created_at": item.created_at.isoformat(),
+            })
+
+        return Response(result)
+
+
+# ═══════════════════════════════════════════════
 #  Inventory CRUD
 # ═══════════════════════════════════════════════
 
@@ -230,12 +258,55 @@ class DesignMoveOutView(APIView):
 
     @transaction.atomic
     def post(self, request):
+        move_type = request.data.get("move_type", "")
+
+        # For specific_items, we use a different validation path
+        if move_type == "specific_items":
+            warehouse_id = request.data.get("warehouse")
+            design_number = request.data.get("design_number", "")
+            item_ids = request.data.get("item_ids", [])
+            note = request.data.get("note", "")
+
+            if not warehouse_id or not item_ids:
+                return Response(
+                    {"detail": "warehouse and item_ids are required."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            items = (
+                Inventory.objects.select_for_update()
+                .filter(
+                    id__in=item_ids,
+                    warehouse_id=warehouse_id,
+                    remaining_meters__gt=0,
+                )
+            )
+
+            if items.count() != len(item_ids):
+                return Response(
+                    {"detail": "Some items not found or already moved out."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            for item in items:
+                meters_moved = item.remaining_meters
+                item.remaining_meters = 0
+                item.save()
+                InventoryMovement.objects.create(
+                    inventory=item,
+                    meters_out=meters_moved,
+                    moved_by=request.user,
+                    note=note,
+                )
+
+            return Response({"message": "Moved successfully."})
+
+        # Original items/meters flow
         serializer = DesignMoveOutSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         warehouse_id = serializer.validated_data["warehouse"]
         design_number = serializer.validated_data["design_number"]
-        move_type = serializer.validated_data["move_type"]
         value = serializer.validated_data["value"]
         note = serializer.validated_data.get("note", "")
 

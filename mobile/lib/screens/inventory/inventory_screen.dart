@@ -67,7 +67,7 @@ class InventoryScreen extends ConsumerWidget {
                 }
                 return RefreshIndicator(
                   onRefresh: () async {
-                    ref.invalidate(groupedInventoryProvider);
+                    ref.invalidate(designGroupsProvider);
                     await Future.delayed(const Duration(milliseconds: 300));
                   },
                   child: ListView.builder(

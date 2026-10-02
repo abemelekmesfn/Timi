@@ -6,6 +6,7 @@ import '../../l10n/app_locale.dart';
 import '../../providers/user_provider.dart';
 import '../../providers/warehouse_provider.dart';
 import '../../providers/inventory_provider.dart';
+import '../../services/api/api_service.dart';
 import 'inventory_screen.dart';
 import 'transfer_screen.dart';
 
@@ -171,41 +172,86 @@ class _WarehousesScreenState extends ConsumerState<WarehousesScreen> {
   }
 
   void _showDeleteWarehouseDialog(BuildContext context, WidgetRef ref, String warehouseId, String warehouseName) {
+    final pwdController = TextEditingController();
+    bool isVerifying = false;
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(S.of(context, "deleteWarehouse")),
-        content: Text(
-          "${S.of(context, "deleteWarehouseConfirm")} \"$warehouseName\"?",
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(S.of(context, "cancel")),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
-            onPressed: () async {
-              try {
-                await ref.read(warehousesProvider.notifier).deleteWarehouse(warehouseId);
-                if (context.mounted) {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(S.of(context, "warehouseDeleted"))),
-                  );
-                }
-              } catch (e) {
-                if (context.mounted) {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("${S.of(context, "error")}: $e")),
-                  );
-                }
-              }
-            },
-            child: Text(S.of(context, "delete")),
-          ),
-        ],
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            title: Text(S.of(context, "deleteWarehouse")),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("${S.of(context, "deleteWarehouseConfirm")} \"$warehouseName\"?"),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: pwdController,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: "Admin Password",
+                    border: const OutlineInputBorder(),
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: isVerifying ? null : () => Navigator.pop(context),
+                child: Text(S.of(context, "cancel")),
+              ),
+              FilledButton(
+                style: FilledButton.styleFrom(backgroundColor: Colors.red),
+                onPressed: isVerifying
+                    ? null
+                    : () async {
+                        final pwd = pwdController.text.trim();
+                        if (pwd.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("Password is required")),
+                          );
+                          return;
+                        }
+
+                        setState(() => isVerifying = true);
+
+                        try {
+                          final res = await ApiService.dio.post("/auth/verify-password/", data: {"access_code": pwd});
+                          if (res.data["valid"] != true) {
+                            setState(() => isVerifying = false);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text("Invalid admin password")),
+                            );
+                            return;
+                          }
+
+                          // Password is correct, proceed to delete
+                          await ref.read(warehousesProvider.notifier).deleteWarehouse(warehouseId);
+                          
+                          if (context.mounted) {
+                            Navigator.pop(context);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(S.of(context, "warehouseDeleted"))),
+                            );
+                          }
+                        } catch (e) {
+                          setState(() => isVerifying = false);
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text("${S.of(context, "error")}: $e")),
+                            );
+                          }
+                        }
+                      },
+                child: isVerifying
+                    ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                    : Text(S.of(context, "delete")),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

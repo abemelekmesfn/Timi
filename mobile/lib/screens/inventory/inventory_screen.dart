@@ -86,6 +86,33 @@ class InventoryScreen extends ConsumerWidget {
                             builder: (_) => MoveOutDialog(designGroup: group),
                           );
                         },
+                        onLongPress: () {
+                          showDialog(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              title: Text(group.designName.isNotEmpty ? group.designName : S.of(ctx, "designName")),
+                              content: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text("Design Number: ${group.designNumber}"),
+                                  const SizedBox(height: 8),
+                                  Text("Price: ${group.pricePerMeter.toStringAsFixed(2)} ETB"),
+                                  const SizedBox(height: 8),
+                                  Text("Meters Available: ${group.totalMeters}"),
+                                  const SizedBox(height: 8),
+                                  Text("Items Available: ${group.itemCount}"),
+                                ],
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(ctx),
+                                  child: Text(S.of(ctx, "cancel")),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
                         child: Padding(
                           padding: const EdgeInsets.all(16.0),
                           child: Row(

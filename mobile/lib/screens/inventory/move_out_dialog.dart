@@ -339,6 +339,7 @@ class _MoveOutDialogState extends ConsumerState<MoveOutDialog> {
           final item = displayedItems[index];
           final itemId = item['id'] as String;
           final meters = item['remaining_meters'].toString();
+          final color = item['color_number']?.toString() ?? '';
           final isSelected = selectedItemIds.contains(itemId);
 
           return InkWell(
@@ -365,6 +366,16 @@ class _MoveOutDialogState extends ConsumerState<MoveOutDialog> {
                       ),
                     ),
                   ),
+                  if (color.isNotEmpty) ...[
+                    Text(
+                      color,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: AppColors.warmGrey,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                  ],
                   SizedBox(
                     width: 24,
                     height: 24,

@@ -43,6 +43,25 @@ class LoginView(APIView):
         })
 
 
+class VerifyPasswordView(APIView):
+    """Verifies if the provided access code belongs to an admin/owner."""
+    authentication_classes = []
+    permission_classes = []
+
+    def post(self, request):
+        code = request.data.get("access_code", "")
+        try:
+            user = User.objects.get(
+                access_code=code,
+                is_active=True
+            )
+            if "owner" in user.roles:
+                return Response({"valid": True})
+            else:
+                return Response({"valid": False, "detail": "User is not an admin"})
+        except User.DoesNotExist:
+            return Response({"valid": False, "detail": "Invalid access code"}, status=status.HTTP_400_BAD_REQUEST)
+
 class ResetDemoDataView(APIView):
     authentication_classes = []
     permission_classes = []

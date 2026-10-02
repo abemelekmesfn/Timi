@@ -241,27 +241,7 @@ class DashboardScreen extends ConsumerWidget {
                 ),
               ),
 
-              if (u.roles.contains("owner"))
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Consumer(builder: (context, ref, child) {
-                    final totalCredit = ref.watch(totalCreditProvider);
-                    return totalCredit.when(
-                      data: (total) => SummaryCard(
-                        title: S.of(context, "totalCredit"),
-                        value: "${total.toStringAsFixed(2)} ETB",
-                      ),
-                      loading: () => SummaryCard(
-                        title: S.of(context, "totalCredit"),
-                        value: S.of(context, "loading"),
-                      ),
-                      error: (_, __) => SummaryCard(
-                        title: S.of(context, "totalCredit"),
-                        value: S.of(context, "error"),
-                      ),
-                    );
-                  }),
-                ),
+
 
               Expanded(
                 child: Padding(

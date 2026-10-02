@@ -837,10 +837,16 @@ class DashboardExportView(APIView):
             }
         }
         
+        lang = request.query_params.get("lang", "en")
+        warehouse_id = request.query_params.get("warehouse_id")
+        
         t = translations.get(lang, translations["en"])
 
         # 1. Total Assets
         inventories = Inventory.objects.filter(remaining_meters__gt=0)
+        if warehouse_id:
+            inventories = inventories.filter(warehouse_id=warehouse_id)
+            
         total_items = inventories.count()
         total_meters = inventories.aggregate(total=Sum("remaining_meters"))["total"] or Decimal("0.0")
 
@@ -864,14 +870,21 @@ class DashboardExportView(APIView):
             start_date = now - timedelta(days=365 * 5)
             trunc_func = TruncYear('created_at')
             
-        # 3. Chart aggregate data
-        entered_agg = Inventory.objects.filter(created_at__gte=start_date)\
+        entered_query = Inventory.objects.filter(created_at__gte=start_date)
+        if warehouse_id:
+            entered_query = entered_query.filter(warehouse_id=warehouse_id)
+            
+        entered_agg = entered_query\
             .annotate(date=trunc_func)\
             .values('date')\
             .annotate(total_entered=Sum('original_meters'))\
             .order_by('date')
             
-        out_agg = InventoryMovement.objects.filter(created_at__gte=start_date)\
+        out_query = InventoryMovement.objects.filter(created_at__gte=start_date)
+        if warehouse_id:
+            out_query = out_query.filter(inventory__warehouse_id=warehouse_id)
+            
+        out_agg = out_query\
             .annotate(date=trunc_func)\
             .values('date')\
             .annotate(total_out=Sum('meters_out'))\
@@ -890,7 +903,7 @@ class DashboardExportView(APIView):
 
         sorted_chart_data = [{'date': k, 'entered': v['entered'], 'out': v['out']} for k, v in sorted(chart_data.items())]
 
-        top_designs = InventoryMovement.objects.filter(created_at__gte=start_date)\
+        top_designs = out_query\
             .values('inventory__design_number')\
             .annotate(total_out=Sum('meters_out'))\
             .order_by('-total_out')[:10]
@@ -915,9 +928,10 @@ class DashboardExportView(APIView):
                 }])
 
                 # Sheet 2: Detailed Items Entered History
-                items_in = Inventory.objects.filter(created_at__gte=start_date)\
-                    .select_related('warehouse', 'created_by')\
-                    .order_by('-created_at')
+                items_in_qs = Inventory.objects.filter(created_at__gte=start_date)
+                if warehouse_id:
+                    items_in_qs = items_in_qs.filter(warehouse_id=warehouse_id)
+                items_in = items_in_qs.select_related('warehouse', 'created_by').order_by('-created_at')
                 
                 rows_in = []
                 for item in items_in:
@@ -933,9 +947,10 @@ class DashboardExportView(APIView):
                 df_in = pd.DataFrame(rows_in) if rows_in else pd.DataFrame()
 
                 # Sheet 3: Detailed Items Out History
-                movements = InventoryMovement.objects.filter(created_at__gte=start_date)\
-                    .select_related('inventory', 'inventory__warehouse', 'moved_by')\
-                    .order_by('-created_at')
+                movements_qs = InventoryMovement.objects.filter(created_at__gte=start_date)
+                if warehouse_id:
+                    movements_qs = movements_qs.filter(inventory__warehouse_id=warehouse_id)
+                movements = movements_qs.select_related('inventory', 'inventory__warehouse', 'moved_by').order_by('-created_at')
                 
                 rows_out = []
                 for mv in movements:
@@ -1117,9 +1132,13 @@ class DashboardStatsView(APIView):
 
     def get(self, request):
         period = request.query_params.get("period", "daily") # daily, weekly, yearly
+        warehouse_id = request.query_params.get("warehouse_id")
 
         # 1. Total Assets
         inventories = Inventory.objects.filter(remaining_meters__gt=0)
+        if warehouse_id:
+            inventories = inventories.filter(warehouse_id=warehouse_id)
+            
         total_items = inventories.count()
         total_meters = inventories.aggregate(total=Sum("remaining_meters"))["total"] or Decimal("0.0")
 
@@ -1144,20 +1163,28 @@ class DashboardStatsView(APIView):
             start_date = now - timedelta(days=365 * 5)
             trunc_func = TruncYear('created_at')
 
-        entered = Inventory.objects.filter(created_at__gte=start_date)\
+        entered_query = Inventory.objects.filter(created_at__gte=start_date)
+        if warehouse_id:
+            entered_query = entered_query.filter(warehouse_id=warehouse_id)
+
+        entered = entered_query\
             .annotate(date=trunc_func)\
             .values('date')\
             .annotate(total_entered=Sum('original_meters'))\
             .order_by('date')
             
-        out = InventoryMovement.objects.filter(created_at__gte=start_date)\
+        out_query = InventoryMovement.objects.filter(created_at__gte=start_date)
+        if warehouse_id:
+            out_query = out_query.filter(inventory__warehouse_id=warehouse_id)
+
+        out = out_query\
             .annotate(date=trunc_func)\
             .values('date')\
             .annotate(total_out=Sum('meters_out'))\
             .order_by('date')
 
         # 3. Pie Chart: Which design is more going out
-        top_designs = InventoryMovement.objects.filter(created_at__gte=start_date)\
+        top_designs = out_query\
             .values('inventory__design_number')\
             .annotate(total_out=Sum('meters_out'))\
             .order_by('-total_out')[:5]

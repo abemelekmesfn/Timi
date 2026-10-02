@@ -11,6 +11,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/constants/app_constants.dart';
 import '../../l10n/app_locale.dart';
 import '../../providers/dashboard_stats_provider.dart';
+import '../../providers/warehouse_provider.dart';
 import '../../widgets/summary_card.dart';
 
 class AdminReportsScreen extends ConsumerWidget {
@@ -32,7 +33,7 @@ class AdminReportsScreen extends ConsumerWidget {
           PopupMenuButton<String>(
             icon: const Icon(Icons.download, color: AppColors.primary),
             tooltip: S.of(context, "exportReport"),
-            onSelected: (val) => _export(context, val, period),
+            onSelected: (val) => _export(context, ref, val, period),
             itemBuilder: (_) => [
               PopupMenuItem(
                 value: "pdf",
@@ -82,6 +83,10 @@ class AdminReportsScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                // ── Warehouse Filter ──
+                _buildWarehouseSelector(context, ref),
+                const SizedBox(height: 12),
+                
                 // ── Period Filter ──
                 _buildPeriodSelector(context, ref, period),
                 
@@ -346,6 +351,49 @@ class AdminReportsScreen extends ConsumerWidget {
     );
   }
   
+  Widget _buildWarehouseSelector(BuildContext context, WidgetRef ref) {
+    final warehousesAsync = ref.watch(warehousesProvider);
+    final selectedId = ref.watch(dashboardWarehouseProvider);
+
+    return warehousesAsync.when(
+      data: (warehouses) {
+        return Container(
+          decoration: BoxDecoration(
+            color: AppColors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.border),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String?>(
+              value: selectedId,
+              isExpanded: true,
+              hint: Text(S.of(context, "warehouse")),
+              icon: const Icon(Icons.arrow_drop_down, color: AppColors.warmGrey),
+              items: [
+                DropdownMenuItem<String?>(
+                  value: null,
+                  child: Text("All Warehouses", style: const TextStyle(fontSize: 14)),
+                ),
+                ...warehouses.map((w) {
+                  return DropdownMenuItem<String?>(
+                    value: w.id,
+                    child: Text(w.name, style: const TextStyle(fontSize: 14)),
+                  );
+                }),
+              ],
+              onChanged: (val) {
+                ref.read(dashboardWarehouseProvider.notifier).state = val;
+              },
+            ),
+          ),
+        );
+      },
+      loading: () => const SizedBox(),
+      error: (_, __) => const SizedBox(),
+    );
+  }
+
   Widget _buildPeriodSelector(BuildContext context, WidgetRef ref, String period) {
     return Container(
       decoration: BoxDecoration(
@@ -449,7 +497,7 @@ class AdminReportsScreen extends ConsumerWidget {
     return max * 1.2;
   }
 
-  Future<void> _export(BuildContext context, String format, String period) async {
+  Future<void> _export(BuildContext context, WidgetRef ref, String format, String period) async {
     try {
       final scaffold = ScaffoldMessenger.of(context);
       scaffold.showSnackBar(
@@ -458,7 +506,12 @@ class AdminReportsScreen extends ConsumerWidget {
 
       final baseUrl = AppConstants.baseUrl;
       final lang = Localizations.localeOf(context).languageCode;
-      final url = '$baseUrl/inventory/dashboard-export/?export_format=$format&period=$period&lang=$lang';
+      String url = '$baseUrl/inventory/dashboard-export/?export_format=$format&period=$period&lang=$lang';
+      
+      final warehouseId = ref.read(dashboardWarehouseProvider);
+      if (warehouseId != null) {
+        url += '&warehouse_id=$warehouseId';
+      }
       
       final dio = Dio();
       // Add tunnel bypass header

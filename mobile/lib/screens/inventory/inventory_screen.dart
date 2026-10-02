@@ -65,10 +65,16 @@ class InventoryScreen extends ConsumerWidget {
                 if (groups.isEmpty) {
                   return const Center(child: Text("No items"));
                 }
-                return ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: groups.length,
-                  itemBuilder: (_, i) {
+                return RefreshIndicator(
+                  onRefresh: () async {
+                    ref.invalidate(groupedInventoryProvider);
+                    await Future.delayed(const Duration(milliseconds: 300));
+                  },
+                  child: ListView.builder(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: groups.length,
+                    itemBuilder: (_, i) {
                     final group = groups[i];
                     return Card(
                       elevation: 0,
@@ -172,6 +178,7 @@ class InventoryScreen extends ConsumerWidget {
                       ),
                     );
                   },
+                  ),
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),

@@ -31,7 +31,8 @@ from .permissions import (
     HasDashboardPermission,
     HasDesignPermission,
     HasMoveOutPermission,
-    HasImportPermission
+    HasImportPermission,
+    HasDesignNamePermission
 )
 
 
@@ -628,12 +629,12 @@ class DesignNameListCreateView(generics.ListCreateAPIView):
 
     queryset = DesignName.objects.all().order_by("-created_at")
     serializer_class = DesignNameSerializer
-    permission_classes = [HasDesignPermission]
+    permission_classes = [HasDesignNamePermission]
 
 class DesignNameDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = DesignName.objects.all()
     serializer_class = DesignNameSerializer
-    permission_classes = [HasDesignPermission]
+    permission_classes = [HasDesignNamePermission]
     lookup_field = "design_number"
 
 # ═══════════════════════════════════════════════
@@ -738,14 +739,20 @@ class ParseExcelView(APIView):
                         if pd.isna(des_val) or pd.isna(qty_val): continue
                         
                         design_no = str(des_val).strip()
-                        color_no = str(row.iloc[col_idx]).strip() if col_idx != -1 and not pd.isna(row.iloc[col_idx]) else ""
+                        color_no = ""
+                        if col_idx != -1:
+                            raw_col = row.iloc[col_idx]
+                            if not pd.isna(raw_col):
+                                col_str = str(raw_col).strip()
+                                if col_str.lower() not in ("nan", "none", ""):
+                                    color_no = col_str
                         
                         try:
                             meters = float(qty_val)
-                        except ValueError:
+                        except (ValueError, TypeError):
                             continue
                         
-                        if design_no and meters > 0:
+                        if design_no and design_no.lower() not in ("nan", "none") and meters > 0:
                             parsed_items.append({
                                 "design_number": design_no,
                                 "color_number": color_no,
@@ -767,7 +774,7 @@ from datetime import timedelta
 from django.db.models.functions import TruncDate, TruncWeek, TruncYear
 
 class DashboardExportView(APIView):
-    permission_classes = [IsOwner]
+    permission_classes = [HasDashboardPermission]
 
     def get(self, request):
         export_format = request.query_params.get("export_format", "excel")
@@ -1128,7 +1135,7 @@ class DashboardExportView(APIView):
 
 
 class DashboardStatsView(APIView):
-    permission_classes = [IsOwner]
+    permission_classes = [HasDashboardPermission]
 
     def get(self, request):
         period = request.query_params.get("period", "daily") # daily, weekly, yearly
@@ -1142,14 +1149,15 @@ class DashboardStatsView(APIView):
         total_items = inventories.count()
         total_meters = inventories.aggregate(total=Sum("remaining_meters"))["total"] or Decimal("0.0")
 
-        # Calculate total ETB
+        # Calculate total ETB (only for owners)
         total_birr = Decimal("0.0")
-        dns = DesignName.objects.all()
-        price_map = {dn.design_number: dn.price_per_meter for dn in dns}
+        if request.user and request.user.is_authenticated and "owner" in request.user.roles:
+            dns = DesignName.objects.all()
+            price_map = {dn.design_number: dn.price_per_meter for dn in dns}
 
-        for inv in inventories:
-            price = price_map.get(inv.design_number, Decimal('0.0'))
-            total_birr += inv.remaining_meters * price
+            for inv in inventories:
+                price = price_map.get(inv.design_number, Decimal('0.0'))
+                total_birr += inv.remaining_meters * price
 
         # 2. Charts Data
         now = timezone.now()

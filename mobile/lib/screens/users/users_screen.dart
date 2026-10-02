@@ -29,26 +29,34 @@ class UsersScreen extends ConsumerWidget {
         },
       ),
       body: users.when(
-        data: (list) => ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: list.length,
-          itemBuilder: (_, i) {
-            return UserTile(
-              user: list[i],
-              onTap: () async {
-                await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => EditUserScreen(user: list[i]),
-                  ),
-                );
-                ref.invalidate(usersProvider);
-              },
-              onLongPress: () {
-                _showDeleteUserDialog(context, ref, list[i].id, list[i].firstName);
-              },
-            );
+        data: (list) => RefreshIndicator(
+          onRefresh: () async {
+            ref.invalidate(usersProvider);
+            // Optional delay for UI smoothness
+            await Future.delayed(const Duration(milliseconds: 300));
           },
+          child: ListView.builder(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(16),
+            itemCount: list.length,
+            itemBuilder: (_, i) {
+              return UserTile(
+                user: list[i],
+                onTap: () async {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => EditUserScreen(user: list[i]),
+                    ),
+                  );
+                  ref.invalidate(usersProvider);
+                },
+                onLongPress: () {
+                  _showDeleteUserDialog(context, ref, list[i].id, list[i].firstName);
+                },
+              );
+            },
+          ),
         ),
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (_, __) => Center(child: Text(S.of(context, "error"))),

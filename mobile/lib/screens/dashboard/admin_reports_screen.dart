@@ -12,6 +12,7 @@ import '../../core/constants/app_constants.dart';
 import '../../l10n/app_locale.dart';
 import '../../providers/dashboard_stats_provider.dart';
 import '../../providers/warehouse_provider.dart';
+import '../../providers/user_provider.dart';
 import '../../widgets/summary_card.dart';
 
 class AdminReportsScreen extends ConsumerWidget {
@@ -78,9 +79,15 @@ class AdminReportsScreen extends ConsumerWidget {
           ),
         ),
         data: (stats) {
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
+          return RefreshIndicator(
+            onRefresh: () async {
+              ref.invalidate(dashboardStatsProvider);
+              await Future.delayed(const Duration(milliseconds: 300));
+            },
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(16),
+              child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 // ── Warehouse Filter ──
@@ -93,45 +100,47 @@ class AdminReportsScreen extends ConsumerWidget {
                 const SizedBox(height: 16),
 
                 // ── Total Assets ETB (highlighted) ──
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF0B6E4F), Color(0xFF14A76C)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primary.withAlpha(40),
-                        blurRadius: 16,
-                        offset: const Offset(0, 6),
+                if (ref.watch(userProvider).valueOrNull?.roles.contains("owner") == true)
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF0B6E4F), Color(0xFF14A76C)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        S.of(context, "totalAssetsBirr"),
-                        style: const TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w500),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        "${NumberFormat('#,##0.00').format(stats.totalBirr)} ETB",
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 28,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: -0.5,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primary.withAlpha(40),
+                          blurRadius: 16,
+                          offset: const Offset(0, 6),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          S.of(context, "totalAssetsBirr"),
+                          style: const TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w500),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          "${NumberFormat('#,##0.00').format(stats.totalBirr)} ETB",
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 28,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
 
-                const SizedBox(height: 12),
+                if (ref.watch(userProvider).valueOrNull?.roles.contains("owner") == true)
+                  const SizedBox(height: 12),
 
                 // ── Items & Meters Side by Side ──
                 Row(
@@ -344,6 +353,7 @@ class AdminReportsScreen extends ConsumerWidget {
                   
                 const SizedBox(height: 48),
               ],
+            ),
             ),
           );
         },

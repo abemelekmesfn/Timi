@@ -23,10 +23,10 @@ class HasTransferPermission(BasePermission):
     def has_permission(self, request, view): return check_perm(request, "can_transfer")
 
 class HasHistoryPermission(BasePermission):
-    def has_permission(self, request, view): return check_perm(request, "can_view_history")
+    def has_permission(self, request, view): return check_perm(request, "can_view_warehouse_history")
 
 class HasDashboardPermission(BasePermission):
-    def has_permission(self, request, view): return check_perm(request, "can_view_dashboard")
+    def has_permission(self, request, view): return check_perm(request, "can_view_reports")
 
 class HasDesignPermission(BasePermission):
     def has_permission(self, request, view): return check_perm(request, "can_manage_designs")
@@ -35,7 +35,10 @@ class HasMoveOutPermission(BasePermission):
     def has_permission(self, request, view): return check_perm(request, "can_move_out")
 
 class HasImportPermission(BasePermission):
-    def has_permission(self, request, view): return check_perm(request, "can_import")
+    def has_permission(self, request, view): return check_perm(request, "can_import_items")
+
+class HasDesignNamePermission(BasePermission):
+    def has_permission(self, request, view): return check_perm(request, "can_manage_design_names")
 
 class HasWarehouseAccess(BasePermission):
     def has_permission(self, request, view):

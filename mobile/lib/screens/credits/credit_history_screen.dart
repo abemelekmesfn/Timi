@@ -39,10 +39,18 @@ class _CreditHistoryScreenState extends State<CreditHistoryScreen> {
             return Center(child: Text(S.of(context, "noPaidCredits")));
           }
 
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: items.length,
-            itemBuilder: (_, i) {
+          return RefreshIndicator(
+            onRefresh: () async {
+              setState(() {
+                history = CreditService().getPaidHistory();
+              });
+              await history;
+            },
+            child: ListView.builder(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(16),
+              itemCount: items.length,
+              itemBuilder: (_, i) {
               final credit = items[i];
 
               return Card(
@@ -69,6 +77,7 @@ class _CreditHistoryScreenState extends State<CreditHistoryScreen> {
                 ),
               );
             },
+            ),
           );
         },
       ),

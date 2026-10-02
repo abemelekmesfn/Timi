@@ -25,10 +25,13 @@ class _EditUserScreenState extends ConsumerState<EditUserScreen> {
 
   // Permissions
   late List<String> allowedWarehouses;
+  bool hasCreditAccess = false;
   bool canTransfer = false;
-  bool canViewHistory = false;
-  bool canViewDashboard = false;
+  bool canViewWarehouseHistory = false;
+  bool canViewCreditHistory = false;
+  bool canViewReports = false;
   bool canManageDesigns = false;
+  bool canManageDesignNames = false;
   bool canManageCredits = false;
   bool canMoveOut = false;
   bool canImport = false;
@@ -42,16 +45,20 @@ class _EditUserScreenState extends ConsumerState<EditUserScreen> {
     
     isOwner = widget.user.roles.contains("owner");
     isActive = widget.user.isActive;
+    
+    hasCreditAccess = widget.user.roles.contains("credit");
 
     final p = widget.user.permissions;
     allowedWarehouses = List<String>.from(p["warehouses"] ?? []);
     canTransfer = p["can_transfer"] == true;
-    canViewHistory = p["can_view_history"] == true;
-    canViewDashboard = p["can_view_dashboard"] == true;
+    canViewWarehouseHistory = p["can_view_warehouse_history"] == true;
+    canViewCreditHistory = p["can_view_credit_history"] == true;
+    canViewReports = p["can_view_reports"] == true;
     canManageDesigns = p["can_manage_designs"] == true;
+    canManageDesignNames = p["can_manage_design_names"] == true;
     canManageCredits = p["can_manage_credits"] == true;
     canMoveOut = p["can_move_out"] == true;
-    canImport = p["can_import"] == true;
+    canImport = p["can_import_items"] == true;
   }
 
   Future<void> save() async {
@@ -59,19 +66,29 @@ class _EditUserScreenState extends ConsumerState<EditUserScreen> {
       final permissions = {
         "warehouses": allowedWarehouses,
         "can_transfer": canTransfer,
-        "can_view_history": canViewHistory,
-        "can_view_dashboard": canViewDashboard,
+        "can_view_warehouse_history": canViewWarehouseHistory,
+        "can_view_credit_history": canViewCreditHistory,
+        "can_view_reports": canViewReports,
         "can_manage_designs": canManageDesigns,
+        "can_manage_design_names": canManageDesignNames,
         "can_manage_credits": canManageCredits,
         "can_move_out": canMoveOut,
-        "can_import": canImport,
+        "can_import_items": canImport,
       };
+
+      List<String> roles = [];
+      if (isOwner) {
+        roles.add("owner");
+      } else {
+        if (allowedWarehouses.isNotEmpty) roles.add("warehouse");
+        if (hasCreditAccess) roles.add("credit");
+      }
 
       await UserService().updateUser(
         id: widget.user.id,
         firstName: first.text,
         lastName: last.text,
-        roles: isOwner ? ["owner"] : [],
+        roles: roles,
         permissions: permissions,
         accessCode: accessCode.text,
         isActive: isActive,
@@ -133,16 +150,10 @@ class _EditUserScreenState extends ConsumerState<EditUserScreen> {
           
           if (!isOwner) ...[
             const Divider(height: 40),
-            const Text("Permissions", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text("Top Level Access", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
-
-            SwitchListTile(title: const Text("Can View Dashboard"), value: canViewDashboard, onChanged: (v) => setState(() => canViewDashboard = v)),
-            SwitchListTile(title: const Text("Can Move Out Items"), value: canMoveOut, onChanged: (v) => setState(() => canMoveOut = v)),
-            SwitchListTile(title: const Text("Can Transfer Warehouses"), value: canTransfer, onChanged: (v) => setState(() => canTransfer = v)),
-            SwitchListTile(title: const Text("Can View History"), value: canViewHistory, onChanged: (v) => setState(() => canViewHistory = v)),
-            SwitchListTile(title: const Text("Can Manage Designs"), value: canManageDesigns, onChanged: (v) => setState(() => canManageDesigns = v)),
-            SwitchListTile(title: const Text("Can Manage Credits"), value: canManageCredits, onChanged: (v) => setState(() => canManageCredits = v)),
-            SwitchListTile(title: const Text("Can Import Excel/Bulk"), value: canImport, onChanged: (v) => setState(() => canImport = v)),
+            
+            SwitchListTile(title: const Text("Credit Access"), subtitle: const Text("View Credits Tab"), value: hasCreditAccess, onChanged: (v) => setState(() => hasCreditAccess = v)),
 
             const Divider(height: 40),
             const Text("Warehouse Access", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
@@ -172,6 +183,20 @@ class _EditUserScreenState extends ConsumerState<EditUserScreen> {
               loading: () => const CircularProgressIndicator(),
               error: (err, stack) => Text("Error loading warehouses: $err"),
             ),
+
+            const Divider(height: 40),
+            const Text("Permissions", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
+
+            SwitchListTile(title: const Text("Can View Reports"), value: canViewReports, onChanged: (v) => setState(() => canViewReports = v)),
+            SwitchListTile(title: const Text("Can View Warehouse History"), value: canViewWarehouseHistory, onChanged: (v) => setState(() => canViewWarehouseHistory = v)),
+            SwitchListTile(title: const Text("Can View Credit History"), value: canViewCreditHistory, onChanged: (v) => setState(() => canViewCreditHistory = v)),
+            SwitchListTile(title: const Text("Can Move Out Items"), value: canMoveOut, onChanged: (v) => setState(() => canMoveOut = v)),
+            SwitchListTile(title: const Text("Can Transfer Warehouses"), value: canTransfer, onChanged: (v) => setState(() => canTransfer = v)),
+            SwitchListTile(title: const Text("Can Manage Designs"), value: canManageDesigns, onChanged: (v) => setState(() => canManageDesigns = v)),
+            SwitchListTile(title: const Text("Can Give Design Name/Price"), value: canManageDesignNames, onChanged: (v) => setState(() => canManageDesignNames = v)),
+            SwitchListTile(title: const Text("Can Manage Credits"), value: canManageCredits, onChanged: (v) => setState(() => canManageCredits = v)),
+            SwitchListTile(title: const Text("Can Import Items"), value: canImport, onChanged: (v) => setState(() => canImport = v)),
           ],
 
           const Divider(height: 40),

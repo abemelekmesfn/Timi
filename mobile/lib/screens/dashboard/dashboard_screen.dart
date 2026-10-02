@@ -244,9 +244,16 @@ class DashboardScreen extends ConsumerWidget {
 
 
               Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: RefreshIndicator(
+                  onRefresh: () async {
+                    ref.invalidate(userProvider);
+                    ref.invalidate(notificationServiceProvider);
+                    ref.invalidate(cartProvider);
+                    await Future.delayed(const Duration(milliseconds: 300));
+                  },
                   child: GridView.count(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                     crossAxisCount: 2,
                     crossAxisSpacing: 14,
                     mainAxisSpacing: 14,

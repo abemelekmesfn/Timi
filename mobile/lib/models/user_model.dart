@@ -39,14 +39,30 @@ class UserModel {
   }
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
+    List<String> parsedRoles = [];
+    if (json["roles"] is List) {
+      parsedRoles = (json["roles"] as List).map((e) => e.toString()).toList();
+    } else if (json["roles"] is String) {
+      parsedRoles = (json["roles"] as String).split(',').where((e) => e.isNotEmpty).toList();
+    }
+
+    Map<String, dynamic> parsedPerms = {};
+    if (json["permissions"] is Map) {
+      parsedPerms = Map<String, dynamic>.from(json["permissions"]);
+    } else if (json["permissions"] is String) {
+      try {
+        parsedPerms = jsonDecode(json["permissions"]);
+      } catch (_) {}
+    }
+
     return UserModel(
-      id: json["id"] ?? "",
-      firstName: json["first_name"] ?? "",
-      lastName: json["last_name"] ?? "",
-      roles: List<String>.from(json["roles"] ?? []),
-      permissions: Map<String, dynamic>.from(json["permissions"] ?? {}),
-      accessCode: json["access_code"] ?? "",
-      isActive: json["is_active"] ?? true,
+      id: json["id"]?.toString() ?? "",
+      firstName: json["first_name"]?.toString() ?? "",
+      lastName: json["last_name"]?.toString() ?? "",
+      roles: parsedRoles,
+      permissions: parsedPerms,
+      accessCode: json["access_code"]?.toString() ?? "",
+      isActive: json["is_active"] == true || json["is_active"] == "true",
     );
   }
 

@@ -131,6 +131,7 @@ class _CreditScreenState extends ConsumerState<CreditScreen> {
                     ref.invalidate(creditProvider);
                   },
                   child: ListView.builder(
+                    physics: const AlwaysScrollableScrollPhysics(),
                     padding: const EdgeInsets.all(16),
                     itemCount: filtered.length,
                     itemBuilder: (_, index) {

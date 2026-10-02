@@ -7,7 +7,7 @@ from rest_framework import status
 
 from .models import Client, Credit, Payment
 from .serializers import ClientSerializer, CreditSerializer, PaymentSerializer
-from .permissions import HasCreditPermission
+from .permissions import HasCreditPermission, HasCreditHistoryPermission
 
 class ClientSearchView(generics.ListCreateAPIView):
 
@@ -86,7 +86,7 @@ class CreditHistoryView(generics.ListAPIView):
 
     serializer_class = CreditSerializer
 
-    permission_classes = [HasCreditPermission]
+    permission_classes = [HasCreditHistoryPermission]
 
     def get_queryset(self):
         return Credit.objects.filter(

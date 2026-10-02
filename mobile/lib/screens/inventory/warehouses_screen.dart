@@ -61,16 +61,22 @@ class _WarehousesScreenState extends ConsumerState<WarehousesScreen> {
           if (items.isEmpty) {
             return Center(child: Text(S.of(context, "noHistory")));
           }
-          return GridView.builder(
-            padding: const EdgeInsets.all(16),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 14,
-              mainAxisSpacing: 14,
-            ),
-            itemCount: items.length,
-            itemBuilder: (context, index) {
-              final w = items[index];
+          return RefreshIndicator(
+            onRefresh: () async {
+              ref.read(warehousesProvider.notifier).load();
+              await Future.delayed(const Duration(milliseconds: 300));
+            },
+            child: GridView.builder(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(16),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 14,
+                mainAxisSpacing: 14,
+              ),
+              itemCount: items.length,
+              itemBuilder: (context, index) {
+                final w = items[index];
               return Card(
                 elevation: 0,
                 color: AppColors.white,
@@ -128,6 +134,7 @@ class _WarehousesScreenState extends ConsumerState<WarehousesScreen> {
                 ),
               );
             },
+            ),
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../l10n/app_locale.dart';
 import '../../providers/inventory_provider.dart';
 import '../../core/theme/app_colors.dart';
+import '../../widgets/friendly_error_widget.dart';
 
 class InventoryHistoryScreen extends ConsumerWidget {
   const InventoryHistoryScreen({super.key});
@@ -47,7 +48,10 @@ class InventoryHistoryScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, _) => Center(child: Text("${S.of(context, "error")}: $err")),
+        error: (err, _) => FriendlyErrorWidget(
+          error: err,
+          onRetry: () => ref.invalidate(historyProvider),
+        ),
       ),
     );
   }

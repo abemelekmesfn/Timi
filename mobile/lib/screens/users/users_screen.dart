@@ -7,6 +7,7 @@ import '../../services/user_service.dart';
 import '../../widgets/user_tile.dart';
 import 'new_user_screen.dart';
 import 'edit_user_screen.dart';
+import '../../widgets/friendly_error_widget.dart';
 
 class UsersScreen extends ConsumerWidget {
   const UsersScreen({super.key});
@@ -59,7 +60,10 @@ class UsersScreen extends ConsumerWidget {
           ),
         ),
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (_, __) => Center(child: Text(S.of(context, "error"))),
+        error: (err, _) => FriendlyErrorWidget(
+          error: err,
+          onRetry: () => ref.invalidate(usersProvider),
+        ),
       ),
     );
   }

@@ -9,6 +9,7 @@ import '../../widgets/credit_tile.dart';
 import 'new_credit_screen.dart';
 import 'credit_detail_screen.dart';
 import 'credit_history_screen.dart';
+import '../../widgets/friendly_error_widget.dart';
 
 class CreditScreen extends ConsumerStatefulWidget {
   const CreditScreen({super.key});
@@ -156,7 +157,10 @@ class _CreditScreenState extends ConsumerState<CreditScreen> {
 
               loading: () => const Center(child: CircularProgressIndicator()),
 
-              error: (e, _) => Center(child: Text(e.toString())),
+              error: (e, _) => FriendlyErrorWidget(
+                error: e,
+                onRetry: () => ref.invalidate(creditProvider),
+              ),
             ),
           ),
         ],

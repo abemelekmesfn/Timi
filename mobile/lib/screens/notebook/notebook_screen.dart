@@ -5,6 +5,7 @@ import '../../l10n/app_locale.dart';
 import '../../providers/note_provider.dart';
 import '../../widgets/note_tile.dart';
 import 'note_editor_screen.dart';
+import '../../widgets/friendly_error_widget.dart';
 
 class NotebookScreen extends ConsumerWidget {
   const NotebookScreen({super.key});
@@ -53,7 +54,10 @@ class NotebookScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (_, __) => Center(child: Text(S.of(context, "error"))),
+        error: (err, _) => FriendlyErrorWidget(
+          error: err,
+          onRetry: () => ref.invalidate(noteProvider),
+        ),
       ),
     );
   }

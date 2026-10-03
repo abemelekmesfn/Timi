@@ -7,6 +7,7 @@ import '../../core/theme/app_colors.dart';
 import 'add_roll_screen.dart'; // keeping file name for compatibility, but it will be updated inside
 import 'inventory_history_screen.dart';
 import 'move_out_dialog.dart';
+import '../../widgets/friendly_error_widget.dart';
 
 class InventoryScreen extends ConsumerWidget {
   final String warehouseName;
@@ -182,7 +183,10 @@ class InventoryScreen extends ConsumerWidget {
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, _) => Center(child: Text("${S.of(context, "error")}: $err")),
+              error: (err, _) => FriendlyErrorWidget(
+                error: err,
+                onRetry: () => ref.invalidate(designGroupsProvider),
+              ),
             ),
           ),
         ],

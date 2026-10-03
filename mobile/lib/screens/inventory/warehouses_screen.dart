@@ -9,6 +9,7 @@ import '../../providers/inventory_provider.dart';
 import '../../services/api/api_service.dart';
 import 'inventory_screen.dart';
 import 'transfer_screen.dart';
+import '../../widgets/friendly_error_widget.dart';
 
 class WarehousesScreen extends ConsumerStatefulWidget {
   const WarehousesScreen({super.key});
@@ -138,7 +139,10 @@ class _WarehousesScreenState extends ConsumerState<WarehousesScreen> {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text("${S.of(context, "error")}: $e")),
+        error: (e, _) => FriendlyErrorWidget(
+          error: e,
+          onRetry: () => ref.read(warehousesProvider.notifier).load(),
+        ),
       ),
     );
   }

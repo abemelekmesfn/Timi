@@ -19,6 +19,7 @@ import '../../providers/cart_provider.dart';
 import '../../providers/notification_provider.dart';
 import '../../services/notification_service.dart';
 import 'admin_reports_screen.dart';
+import '../../widgets/friendly_error_widget.dart';
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
 
@@ -348,7 +349,10 @@ class DashboardScreen extends ConsumerWidget {
         );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (_, __) => Center(child: Text(S.of(context, "error"))),
+        error: (err, _) => FriendlyErrorWidget(
+          error: err,
+          onRetry: () => ref.invalidate(userProvider),
+        ),
       ),
     );
   }

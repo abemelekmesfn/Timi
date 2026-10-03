@@ -22,7 +22,7 @@ class ApiService {
       },
       onError: (e, handler) {
         String msg = e.message ?? "An unknown error occurred.";
-        
+
         if (e.response != null) {
           if (e.response!.statusCode == 403) {
             msg = "Access Denied: You do not have permission for this action.";
@@ -39,17 +39,18 @@ class ApiService {
           msg = "Server is unreachable. Please check your connection.";
         }
 
-        // Throwing a custom string or exception makes UI error messages clean
-        throw ApiException(msg);
+        // Re-throw as a DioException with a clean message so all existing
+        // DioException catches still work, but the message is user-friendly.
+        return handler.reject(
+          DioException(
+            requestOptions: e.requestOptions,
+            response: e.response,
+            type: e.type,
+            error: e.error,
+            message: msg,
+          ),
+        );
       },
     ),
   );
-}
-
-class ApiException implements Exception {
-  final String message;
-  ApiException(this.message);
-
-  @override
-  String toString() => message;
 }

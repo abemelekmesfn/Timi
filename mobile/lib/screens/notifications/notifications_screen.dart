@@ -5,6 +5,7 @@ import '../../core/theme/app_colors.dart';
 import '../../l10n/app_locale.dart';
 import '../../l10n/language_provider.dart';
 import '../../providers/notification_provider.dart';
+import '../../widgets/friendly_error_widget.dart';
 
 class NotificationsScreen extends ConsumerStatefulWidget {
   const NotificationsScreen({super.key});
@@ -79,7 +80,10 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, _) => Center(child: Text("${S.of(context, 'error')}: $err")),
+        error: (err, _) => FriendlyErrorWidget(
+          error: err,
+          onRetry: () => ref.invalidate(notificationServiceProvider),
+        ),
       ),
     );
   }

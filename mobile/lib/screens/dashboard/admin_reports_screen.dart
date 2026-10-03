@@ -14,6 +14,7 @@ import '../../providers/dashboard_stats_provider.dart';
 import '../../providers/warehouse_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../widgets/summary_card.dart';
+import '../../widgets/friendly_error_widget.dart';
 
 class AdminReportsScreen extends ConsumerWidget {
   const AdminReportsScreen({super.key});
@@ -63,20 +64,9 @@ class AdminReportsScreen extends ConsumerWidget {
       ),
       body: statsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
-        error: (err, _) => Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.error_outline, color: AppColors.danger, size: 48),
-              const SizedBox(height: 12),
-              Text("${S.of(context, "error")}: $err", textAlign: TextAlign.center),
-              const SizedBox(height: 12),
-              FilledButton(
-                onPressed: () => ref.invalidate(dashboardStatsProvider),
-                child: Text(S.of(context, "retry")),
-              ),
-            ],
-          ),
+        error: (err, _) => FriendlyErrorWidget(
+          error: err,
+          onRetry: () => ref.invalidate(dashboardStatsProvider),
         ),
         data: (stats) {
           return RefreshIndicator(

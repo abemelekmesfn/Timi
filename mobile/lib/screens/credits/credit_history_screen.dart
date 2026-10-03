@@ -4,6 +4,7 @@ import '../../core/theme/app_colors.dart';
 import '../../l10n/app_locale.dart';
 import '../../models/credit_model.dart';
 import '../../services/credit_service.dart';
+import '../../widgets/friendly_error_widget.dart';
 
 class CreditHistoryScreen extends StatefulWidget {
   const CreditHistoryScreen({super.key});
@@ -29,6 +30,16 @@ class _CreditHistoryScreenState extends State<CreditHistoryScreen> {
       body: FutureBuilder<List<CreditModel>>(
         future: history,
         builder: (_, snapshot) {
+          if (snapshot.hasError) {
+            return FriendlyErrorWidget(
+              error: snapshot.error!,
+              onRetry: () {
+                setState(() {
+                  history = CreditService().getPaidHistory();
+                });
+              },
+            );
+          }
           if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
           }

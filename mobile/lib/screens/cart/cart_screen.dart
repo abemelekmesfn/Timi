@@ -7,6 +7,7 @@ import '../../providers/cart_provider.dart';
 import '../../services/inventory_service.dart';
 import '../../providers/inventory_provider.dart';
 import '../../providers/warehouse_provider.dart';
+import '../../widgets/friendly_error_widget.dart';
 
 class CartScreen extends ConsumerStatefulWidget {
   const CartScreen({super.key});
@@ -67,7 +68,10 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       ),
       body: cartItemsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text("${S.of(context, 'error')}: $err")),
+        error: (err, stack) => FriendlyErrorWidget(
+          error: err,
+          onRetry: () => ref.invalidate(cartProvider),
+        ),
         data: (cartItems) {
           if (cartItems.isEmpty) {
             return Center(

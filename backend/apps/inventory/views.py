@@ -651,17 +651,38 @@ class ParseExcelView(APIView):
             return Response({"error": "No file uploaded"}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
-            # We try pandas since it supports old .xls (using xlrd) and html-xls.
+            # Determine engine based on file extension
+            filename = getattr(file, 'name', '') or ''
+            
+            df = None
+            parse_errors = []
+            
+            # Try openpyxl first (for .xlsx)
             try:
-                df = pd.read_excel(file, header=None, engine='xlrd')
-            except Exception as e_excel:
-                # Often legacy exports are just HTML tables wrapped in .xls
+                file.seek(0)
+                df = pd.read_excel(file, header=None, engine='openpyxl')
+            except Exception as e1:
+                parse_errors.append(f"openpyxl: {str(e1)}")
+            
+            # Try xlrd (for old .xls)
+            if df is None:
+                try:
+                    file.seek(0)
+                    df = pd.read_excel(file, header=None, engine='xlrd')
+                except Exception as e2:
+                    parse_errors.append(f"xlrd: {str(e2)}")
+            
+            # Try HTML fallback (some .xls are actually HTML tables)
+            if df is None:
                 try:
                     file.seek(0)
                     dfs = pd.read_html(file.read())
                     df = dfs[0]
-                except Exception as e_html:
-                    raise Exception(f"Excel Parse Error: {str(e_excel)} | HTML Fallback Error: {str(e_html)}")
+                except Exception as e3:
+                    parse_errors.append(f"HTML: {str(e3)}")
+            
+            if df is None:
+                raise Exception(f"Could not parse file. Errors: {' | '.join(parse_errors)}")
 
             parsed_items = []
             

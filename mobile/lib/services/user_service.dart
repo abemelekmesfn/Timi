@@ -8,6 +8,11 @@ class UserService {
     return (res.data as List).map((e) => UserModel.fromJson(e)).toList();
   }
 
+  Future<UserModel> getMe() async {
+    final res = await ApiService.dio.get("/users/me/");
+    return UserModel.fromJson(res.data);
+  }
+
   Future<UserModel> createUser({
     required String firstName,
     required String lastName,

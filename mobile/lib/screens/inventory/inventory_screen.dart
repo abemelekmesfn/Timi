@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/user_provider.dart';
 
 import '../../l10n/app_locale.dart';
 import '../../providers/inventory_provider.dart';
@@ -17,35 +18,44 @@ class InventoryScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final designGroups = ref.watch(designGroupsProvider);
+    final userAsync = ref.watch(userProvider);
+    final user = userAsync.valueOrNull;
+    final isOwner = user?.roles.contains("owner") ?? false;
+    final canImport = user?.permissions["can_import_items"] == true;
+    final canViewHistory = user?.permissions["can_view_warehouse_history"] == true;
+    final canMoveOut = user?.permissions["can_move_out"] == true;
 
     return Scaffold(
       appBar: AppBar(
         title: Text(warehouseName),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.history),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const InventoryHistoryScreen(),
-                ),
-              );
-            },
-          ),
+          if (isOwner || canViewHistory)
+            IconButton(
+              icon: const Icon(Icons.history),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const InventoryHistoryScreen(),
+                  ),
+                );
+              },
+            ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.add),
-        onPressed: () async {
-          await Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const AddItemScreen()),
-          );
-          ref.invalidate(designGroupsProvider);
-          ref.invalidate(historyProvider);
-        },
-      ),
+      floatingActionButton: (isOwner || canImport)
+          ? FloatingActionButton(
+              child: const Icon(Icons.add),
+              onPressed: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AddItemScreen()),
+                );
+                ref.invalidate(designGroupsProvider);
+                ref.invalidate(historyProvider);
+              },
+            )
+          : null,
       body: Column(
         children: [
           Padding(
@@ -88,10 +98,16 @@ class InventoryScreen extends ConsumerWidget {
                       child: InkWell(
                         borderRadius: BorderRadius.circular(16),
                         onTap: () {
-                          showDialog(
-                            context: context,
-                            builder: (_) => MoveOutDialog(designGroup: group),
-                          );
+                          if (isOwner || canMoveOut) {
+                            showDialog(
+                              context: context,
+                              builder: (_) => MoveOutDialog(designGroup: group),
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(S.of(context, "error") + ": You do not have permission to move out items.")),
+                            );
+                          }
                         },
                         onLongPress: () {
                           showDialog(

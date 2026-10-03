@@ -31,22 +31,24 @@ class _WarehousesScreenState extends ConsumerState<WarehousesScreen> {
     final user = ref.watch(userProvider);
     final warehouses = ref.watch(warehousesProvider);
     final isOwner = user.valueOrNull?.roles.contains("owner") ?? false;
+    final canTransfer = user.valueOrNull?.permissions["can_transfer"] == true;
 
     return Scaffold(
       appBar: AppBar(
         title: Text(S.of(context, "warehouses")),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.swap_horiz),
-            onPressed: () async {
-              await Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const TransferScreen()),
-              );
-              // Reload warehouses when returning from transfer
-              ref.read(warehousesProvider.notifier).load();
-            },
-          ),
+          if (isOwner || canTransfer)
+            IconButton(
+              icon: const Icon(Icons.swap_horiz),
+              onPressed: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const TransferScreen()),
+                );
+                // Reload warehouses when returning from transfer
+                ref.read(warehousesProvider.notifier).load();
+              },
+            ),
         ],
       ),
       floatingActionButton: isOwner

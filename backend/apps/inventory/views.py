@@ -643,6 +643,7 @@ class DesignNameDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 class ParseExcelView(APIView):
     parser_classes = (MultiPartParser, FormParser)
+    permission_classes = [HasImportPermission]
 
     def post(self, request, *args, **kwargs):
         file = request.FILES.get("file")
@@ -1259,12 +1260,14 @@ class DashboardStatsView(APIView):
 
 class CartListView(generics.ListAPIView):
     serializer_class = ReservedInventorySerializer
+    permission_classes = [HasMoveOutPermission]
 
     def get_queryset(self):
         return ReservedInventory.objects.filter(user=self.request.user).order_by("-created_at")
 
 
 class CartAddView(APIView):
+    permission_classes = [HasMoveOutPermission]
     @transaction.atomic
     def post(self, request):
         warehouse_id = request.data.get("warehouseId")
@@ -1323,6 +1326,7 @@ class CartAddView(APIView):
 
 
 class CartRemoveView(APIView):
+    permission_classes = [HasMoveOutPermission]
     @transaction.atomic
     def post(self, request, pk):
         try:
@@ -1337,6 +1341,7 @@ class CartRemoveView(APIView):
 
 
 class CartClearView(APIView):
+    permission_classes = [HasMoveOutPermission]
     @transaction.atomic
     def post(self, request):
         reservations = ReservedInventory.objects.filter(user=request.user)
@@ -1349,6 +1354,7 @@ class CartClearView(APIView):
 
 
 class CartCheckoutView(APIView):
+    permission_classes = [HasMoveOutPermission]
     @transaction.atomic
     def post(self, request):
         reservations = ReservedInventory.objects.filter(user=request.user).order_by("created_at")

@@ -258,7 +258,7 @@ class DashboardScreen extends ConsumerWidget {
                     crossAxisSpacing: 14,
                     mainAxisSpacing: 14,
                     children: [
-                      if (u.roles.contains("owner"))
+                      if (u.roles.contains("owner") || (u.permissions["can_view_reports"] == true))
                         DashboardCard(
                           icon: Icons.bar_chart,
                           title: S.of(context, "reports"),

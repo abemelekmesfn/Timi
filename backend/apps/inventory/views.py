@@ -848,11 +848,21 @@ class DashboardExportView(APIView):
         warehouse_id = request.query_params.get("warehouse_id")
         
         t = translations.get(lang, translations["en"])
+        # Filter based on permissions
+        user = request.user
+        is_owner = "owner" in user.roles if user and user.is_authenticated else False
+        allowed_warehouses = user.permissions.get("warehouses", []) if user and user.is_authenticated else []
 
         # 1. Total Assets
         inventories = Inventory.objects.filter(remaining_meters__gt=0)
         if warehouse_id:
+            # If they provided a specific warehouse, ensure they have access (or are owner)
+            if not is_owner and warehouse_id not in allowed_warehouses:
+                return Response({"error": "Unauthorized to view this warehouse"}, status=403)
             inventories = inventories.filter(warehouse_id=warehouse_id)
+        elif not is_owner:
+            # If no warehouse provided, and not owner, restrict to their allowed warehouses
+            inventories = inventories.filter(warehouse_id__in=allowed_warehouses)
             
         total_items = inventories.count()
         total_meters = inventories.aggregate(total=Sum("remaining_meters"))["total"] or Decimal("0.0")
@@ -880,6 +890,8 @@ class DashboardExportView(APIView):
         entered_query = Inventory.objects.filter(created_at__gte=start_date)
         if warehouse_id:
             entered_query = entered_query.filter(warehouse_id=warehouse_id)
+        elif not is_owner:
+            entered_query = entered_query.filter(warehouse_id__in=allowed_warehouses)
             
         entered_agg = entered_query\
             .annotate(date=trunc_func)\
@@ -890,6 +902,8 @@ class DashboardExportView(APIView):
         out_query = InventoryMovement.objects.filter(created_at__gte=start_date)
         if warehouse_id:
             out_query = out_query.filter(inventory__warehouse_id=warehouse_id)
+        elif not is_owner:
+            out_query = out_query.filter(inventory__warehouse_id__in=allowed_warehouses)
             
         out_agg = out_query\
             .annotate(date=trunc_func)\
@@ -1141,10 +1155,19 @@ class DashboardStatsView(APIView):
         period = request.query_params.get("period", "daily") # daily, weekly, yearly
         warehouse_id = request.query_params.get("warehouse_id")
 
+        # Filter based on permissions
+        user = request.user
+        is_owner = "owner" in user.roles if user and user.is_authenticated else False
+        allowed_warehouses = user.permissions.get("warehouses", []) if user and user.is_authenticated else []
+
         # 1. Total Assets
         inventories = Inventory.objects.filter(remaining_meters__gt=0)
         if warehouse_id:
+            if not is_owner and warehouse_id not in allowed_warehouses:
+                return Response({"error": "Unauthorized to view this warehouse"}, status=403)
             inventories = inventories.filter(warehouse_id=warehouse_id)
+        elif not is_owner:
+            inventories = inventories.filter(warehouse_id__in=allowed_warehouses)
             
         total_items = inventories.count()
         total_meters = inventories.aggregate(total=Sum("remaining_meters"))["total"] or Decimal("0.0")
@@ -1174,6 +1197,8 @@ class DashboardStatsView(APIView):
         entered_query = Inventory.objects.filter(created_at__gte=start_date)
         if warehouse_id:
             entered_query = entered_query.filter(warehouse_id=warehouse_id)
+        elif not is_owner:
+            entered_query = entered_query.filter(warehouse_id__in=allowed_warehouses)
 
         entered = entered_query\
             .annotate(date=trunc_func)\
@@ -1184,6 +1209,8 @@ class DashboardStatsView(APIView):
         out_query = InventoryMovement.objects.filter(created_at__gte=start_date)
         if warehouse_id:
             out_query = out_query.filter(inventory__warehouse_id=warehouse_id)
+        elif not is_owner:
+            out_query = out_query.filter(inventory__warehouse_id__in=allowed_warehouses)
 
         out = out_query\
             .annotate(date=trunc_func)\
